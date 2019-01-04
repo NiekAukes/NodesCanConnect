@@ -38,11 +38,10 @@ public class AnchorHandler : MonoBehaviour {
     }
     private void OnMouseExit()
     {
-        if (GameHandler.BuildMode && !occupied)
-        {
+
             Debug.Log("exit");
             OnHighlightExit();
-        }
+        
     }
 
     ///DrawMethod for Reject

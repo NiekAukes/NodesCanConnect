@@ -9,7 +9,12 @@ public class Player : MonoBehaviour {
     [SerializeField]private float speed = 1;
     [SerializeField]private float ScrollSpeed = 1;
     public bool isTurn = false;
+    public bool StartPlayer;
 
+    public void Start()
+    {
+        GameHandler.CurrPlayerMove = StartPlayer && GameHandler.CurrPlayerMove == null ? this : null;
+    }
 
     public void Update()
     {

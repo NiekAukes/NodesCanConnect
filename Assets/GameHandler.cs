@@ -5,10 +5,16 @@ using System.Collections.Generic;
 public class GameHandler : MonoBehaviour {
     /* To-Do
      * -Move Static Methods to GameHandler - #Done
+     * -Add Highlights OnMouseOver etc. - #working
      * -Add NodeOwners - #Working
      * -Add Strength interaction 
      * 
      */
+
+     /* Bugs-To-Fix
+      * second choise RC on anchor doesn't call OnHighlightExit - Will be fixed on Future Build
+      * Player Movement doesn't work
+         */
 
 
     #region Variables
@@ -29,9 +35,9 @@ public class GameHandler : MonoBehaviour {
         CreateConnection(tst1, tst2); //draws connection between tst1 and tst2 (Debug)
         CreateConnection(tst2, tst3); //draws connection between tst2 and tst3 (Debug)
         CreateConnection(tst1, tst3); //draws connection between tst1 and tst3 (Debug)
-        
 
-        //HexagonalTilling(3, 3, 3f);
+
+        HexagonalTilling(6, 3, 3f);
     }
 	
 	// Update is called once per frame
@@ -45,9 +51,6 @@ public class GameHandler : MonoBehaviour {
     }
 
     #endregion RuntimeHandlers
-
-
-
 
     #region StaticMethods
     public static AnchorHandler CreateAnchor(Vector2 Position) ///Creates Anchor on Position Parameter
@@ -205,8 +208,8 @@ public class GameHandler : MonoBehaviour {
             {
                 posY++;
                 posX = 0;
-                center.x = posY % 2 == 1 ? Mathf.Cos(30 * Mathf.Deg2Rad) * radius + radius : 0f;
-                center.y += radius + 0.5f * radius;
+                center.x = 0f;
+                center.y += (radius + 0.5f * radius) * 2;
             }
             else
             {
