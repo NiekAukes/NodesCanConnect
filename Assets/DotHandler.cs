@@ -16,6 +16,7 @@ public class DotHandler : MonoBehaviour {
         text = GetComponentInChildren<TextMeshPro>();
         UpdateStrength(0);
         color = sprite.color;
+        
 	}
 	
 	// Update is called once per frame

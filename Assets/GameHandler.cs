@@ -11,13 +11,21 @@ public class GameHandler : MonoBehaviour {
      * 
      */
 
-     /* Bugs-To-Fix
-      * second choise RC on anchor doesn't call OnHighlightExit - Will be fixed on Future Build
-      * Player Movement doesn't work
-         */
+    /* Bugs-To-Fix
+     * second choise RC on anchor doesn't call OnHighlightExit - Will be fixed on Future Build
+     * Player Movement doesn't work
+        */
 
 
     #region Variables
+    [System.Serializable]
+    public class Tilling
+    {
+        public enum TillingMode {None, Hexagonal, Triagonal, Random }
+        public TillingMode tillingMode;
+        public int XLength, YLength;
+        public float Radius;
+    }
     public static GameHandler gm;
     public static bool BuildMode = false, OnOver = false;
     public static DotHandler CurrDot;
@@ -26,18 +34,23 @@ public class GameHandler : MonoBehaviour {
     [SerializeField]private GameObject ConnectionPrefab, NodePrefab, AnchorPrefab; //AnchorPrefab
     [SerializeField]private DotHandler tst1, tst2, tst3; //declares Dots in code
     [SerializeField]private Transform ConnectionFolder, AnchorFolder, NodeFolder;
+    public Tilling tilling;
+
     #endregion Variables
 
     #region RuntimeHandlers
     // Use this for initialization
     void Start () {
         gm = this;
-        CreateConnection(tst1, tst2); //draws connection between tst1 and tst2 (Debug)
-        CreateConnection(tst2, tst3); //draws connection between tst2 and tst3 (Debug)
-        CreateConnection(tst1, tst3); //draws connection between tst1 and tst3 (Debug)
-
-
-        HexagonalTilling(6, 3, 3f);
+        if (!(tst1 == null) && !(tst2 == null) && !(tst3 == null))
+        {
+            CreateConnection(tst1, tst2); //draws connection between tst1 and tst2 (Debug)
+            CreateConnection(tst2, tst3); //draws connection between tst2 and tst3 (Debug)
+            CreateConnection(tst1, tst3); //draws connection between tst1 and tst3 (Debug)
+        }
+        if (tilling.tillingMode == Tilling.TillingMode.Hexagonal)
+            HexagonalTilling(tilling.XLength, Mathf.FloorToInt(tilling.YLength/2) + 1, tilling.Radius);
+            HexagonalTilling(2, 3f);
     }
 	
 	// Update is called once per frame
@@ -219,6 +232,46 @@ public class GameHandler : MonoBehaviour {
         }
 
         return anchors.ToArray();
+    }
+
+    public static AnchorHandler[] HexagonalTilling(int range, float radius) ///Hexagonal Tilling
+    {
+        int currRange = 0;
+        List<Vector2> seen = new List<Vector2>();
+        List<AnchorHandler> anchors = new List<AnchorHandler>();
+        Vector2 center = new Vector2(0f, 0f);
+        Vector2 currCenter = center;
+        while (currRange != range)
+        {
+            for (int hexag = 1; hexag < (6 * currRange != 0 ? 6 * currRange : 1) + 1; hexag++)
+            {
+                
+                float HexagAngle = currRange != 0 ? (60 / currRange * hexag) * Mathf.Deg2Rad : 0;
+                
+                if (currRange != 0)
+                    currCenter = return Point(center.x + size * cos(angle_rad), center.y + size * sin(angle_rad))
+                Debug.Log(HexagAngle * Mathf.Rad2Deg + " " + hexag + " " + currRange + " " + radius * currRange + " " + currCenter.x + "/" + currCenter.y);
+                for (int i = 0; i < 6; i++)
+                {
+                    float angleRad = (60 * i - 30) * Mathf.Deg2Rad;
+                    Vector2 p = new Vector2(center.x + currCenter.x + radius * Mathf.Cos(angleRad), center.y + currCenter.y + radius * Mathf.Sin(angleRad));
+                    p.x = Mathf.Round(p.x * 10000) / 10000;
+                    p.y = Mathf.Round(p.y * 10000) / 10000;
+                    if (!seen.Contains(p))
+                    {
+                        seen.Add(p);
+                        AnchorHandler anchor = CreateAnchor(p);
+                        anchor.name = "Hex(" + currRange + ")[" + hexag + "][" + i + "]";
+                        anchors.Add(anchor);
+
+                    }
+                }
+                
+                
+            }
+            currRange++;
+        }
+        return null;
     }
     #endregion Tilling 
 }
