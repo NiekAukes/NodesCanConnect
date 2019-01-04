@@ -139,7 +139,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 127207898}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1e-11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2072893631}
@@ -350,6 +350,16 @@ Prefab:
     - target: {fileID: 4338866142964732, guid: 64687fe89d85d8b40b29ea4e47abf711, type: 2}
       propertyPath: m_RootOrder
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114713340959182764, guid: 64687fe89d85d8b40b29ea4e47abf711,
+        type: 2}
+      propertyPath: isTurn
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114713340959182764, guid: 64687fe89d85d8b40b29ea4e47abf711,
+        type: 2}
+      propertyPath: StartPlayer
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 64687fe89d85d8b40b29ea4e47abf711, type: 2}
@@ -728,7 +738,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 938956615}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1e-11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 208527932}
@@ -1132,9 +1142,6 @@ MonoBehaviour:
   ConnectionFolder: {fileID: 384576906}
   AnchorFolder: {fileID: 342925871}
   NodeFolder: {fileID: 422609697}
-  speed: 1
-  ScrollSpeed: 1
-  Cam: {fileID: 0}
 --- !u!4 &1635157668
 Transform:
   m_ObjectHideFlags: 0
@@ -1622,7 +1629,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2130809698}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1e-11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1384367807}
