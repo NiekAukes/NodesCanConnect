@@ -738,7 +738,7 @@ Prefab:
     - target: {fileID: 114713340959182764, guid: 64687fe89d85d8b40b29ea4e47abf711,
         type: 2}
       propertyPath: ScrollSpeed
-      value: 0.8
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 0}
