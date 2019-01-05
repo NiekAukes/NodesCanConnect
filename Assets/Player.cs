@@ -30,8 +30,6 @@ public class Player : MonoBehaviour {
             if ((cam.orthographicSize > 2 || axisS > 0) && (cam.orthographicSize < 12 || axisS < 0))
                 cam.orthographicSize = cam.orthographicSize + axisS * ScrollSpeed * Mathf.Pow(cam.orthographicSize / 10, 1.1f);
         }
-        else
-            Debug.Log("Update In Ai");
     }
 
     public DotHandler CreateNewNode(AnchorHandler anchor) //will create a new node and connection with initialization when called

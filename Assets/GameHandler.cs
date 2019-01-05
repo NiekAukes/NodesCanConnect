@@ -245,19 +245,23 @@ public class GameHandler : MonoBehaviour {
         {
             for (int hexag = 0; hexag < (6 * currRange != 0 ? 6 * currRange : 1); hexag++)
             {
-                
-                float HexagAngle = currRange != 0 ? (60 / currRange * hexag -) * Mathf.Deg2Rad : 0;
+                float HexagAngle = 0;
+                if (currRange != 0 && hexag % 2 == 0)
+                {
+                    HexagAngle = (60 / currRange * hexag) * Mathf.Deg2Rad;
+                }
+                else
+                    HexagAngle = currRange > 1 ? (60 / currRange * hexag + 30 / currRange) * Mathf.Deg2Rad : 0;
 
-                if (currRange != 0 && currRange % 2 == 1)
-                    currCenter = new Vector2((center.x + radius * currRange * Mathf.Cos(HexagAngle)) * Mathf.Sqrt(3),(center.y + radius * currRange * Mathf.Sin(HexagAngle)) * 7/4);
-                
+                currCenter = new Vector2((center.x + radius * currRange * Mathf.Cos(HexagAngle)) * Mathf.Sqrt(3),(center.y + radius * currRange * Mathf.Sin(HexagAngle)) * 7/4);
+
                 Debug.Log(HexagAngle * Mathf.Rad2Deg + " " + hexag + " " + currRange + " " + radius * currRange + " " + currCenter.x + "/" + currCenter.y);
                 for (int i = 0; i < 6; i++)
                 {
                     float angleRad = (60 * i - 30) * Mathf.Deg2Rad;
                     Vector2 p = new Vector2(currCenter.x + radius * Mathf.Cos(angleRad), currCenter.y + radius * Mathf.Sin(angleRad));
-                    p.x = Mathf.Round(p.x * 10000) / 10000;
-                    p.y = Mathf.Round(p.y * 10000) / 10000;
+                    p.x = Mathf.Round(p.x * 1000) / 1000;
+                    p.y = Mathf.Round(p.y * 1000) / 1000;
                     if (!seen.Contains(p))
                     {
                         seen.Add(p);
