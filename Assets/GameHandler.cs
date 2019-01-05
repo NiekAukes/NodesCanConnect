@@ -50,7 +50,7 @@ public class GameHandler : MonoBehaviour {
         }
         if (tilling.tillingMode == Tilling.TillingMode.Hexagonal)
             HexagonalTilling(tilling.XLength, Mathf.FloorToInt(tilling.YLength/2) + 1, tilling.Radius);
-            HexagonalTilling(2, 3f);
+            HexagonalTilling(3, 3f);
     }
 	
 	// Update is called once per frame
@@ -243,18 +243,19 @@ public class GameHandler : MonoBehaviour {
         Vector2 currCenter = center;
         while (currRange != range)
         {
-            for (int hexag = 1; hexag < (6 * currRange != 0 ? 6 * currRange : 1) + 1; hexag++)
+            for (int hexag = 0; hexag < (6 * currRange != 0 ? 6 * currRange : 1); hexag++)
             {
                 
-                float HexagAngle = currRange != 0 ? (60 / currRange * hexag) * Mathf.Deg2Rad : 0;
+                float HexagAngle = currRange != 0 ? (60 / currRange * hexag -) * Mathf.Deg2Rad : 0;
+
+                if (currRange != 0 && currRange % 2 == 1)
+                    currCenter = new Vector2((center.x + radius * currRange * Mathf.Cos(HexagAngle)) * Mathf.Sqrt(3),(center.y + radius * currRange * Mathf.Sin(HexagAngle)) * 7/4);
                 
-                if (currRange != 0)
-                    currCenter = return Point(center.x + size * cos(angle_rad), center.y + size * sin(angle_rad))
                 Debug.Log(HexagAngle * Mathf.Rad2Deg + " " + hexag + " " + currRange + " " + radius * currRange + " " + currCenter.x + "/" + currCenter.y);
                 for (int i = 0; i < 6; i++)
                 {
                     float angleRad = (60 * i - 30) * Mathf.Deg2Rad;
-                    Vector2 p = new Vector2(center.x + currCenter.x + radius * Mathf.Cos(angleRad), center.y + currCenter.y + radius * Mathf.Sin(angleRad));
+                    Vector2 p = new Vector2(currCenter.x + radius * Mathf.Cos(angleRad), currCenter.y + radius * Mathf.Sin(angleRad));
                     p.x = Mathf.Round(p.x * 10000) / 10000;
                     p.y = Mathf.Round(p.y * 10000) / 10000;
                     if (!seen.Contains(p))
