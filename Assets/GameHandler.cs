@@ -241,42 +241,54 @@ public class GameHandler : MonoBehaviour {
         List<AnchorHandler> anchors = new List<AnchorHandler>();
         Vector2 center = new Vector2(0f, 0f);
         Vector2 currCenter = center;
+        float deltaX = Mathf.Cos(60 * Mathf.Deg2Rad) * radius, deltaY = radius + radius * Mathf.Sin(60);
+
         while (currRange != range)
         {
-            for (int hexag = 0; hexag < (6 * currRange != 0 ? 6 * currRange : 1); hexag++)
+            int hexag;
+            Vector2 P_vPos = new Vector2(center.x + radius * currRange * Mathf.Sqrt(3f), 0);
+            Vector2 P_vNeg = new Vector2(center.x - radius * currRange * Mathf.Sqrt(3f), 0);
+            Vector2 N_vPos = P_vPos, N_vNeg = P_vNeg;
+
+            hexag = 0;
+            while (hexag != range)
             {
-                float HexagAngle = 0;
-                if (currRange != 0 && hexag % 2 == 0)
+                
+                P_vPos = new Vector2(P_vPos.x - deltaX, P_vPos.y + deltaY);
+                P_vNeg = new Vector2(P_vNeg.x - deltaX, P_vNeg.y - deltaY);
+                N_vPos = new Vector2(N_vPos.x + deltaX, P_vPos.y + deltaY);
+                N_vNeg = new Vector2(N_vNeg.x + deltaX, P_vNeg.y - deltaY);
+                Vector2[] t = new Vector2[] {P_vPos, P_vNeg, N_vPos, N_vNeg};
+                for (int j = 0; j < 4; j++)
                 {
-                    HexagAngle = (60 / currRange * hexag) * Mathf.Deg2Rad;
-                }
-                else
-                    HexagAngle = currRange > 1 ? (60 / currRange * hexag + 30 / currRange) * Mathf.Deg2Rad : 0;
-
-                currCenter = new Vector2((center.x + radius * currRange * Mathf.Cos(HexagAngle)) * Mathf.Sqrt(3),(center.y + radius * currRange * Mathf.Sin(HexagAngle)) * 7/4);
-
-                Debug.Log(HexagAngle * Mathf.Rad2Deg + " " + hexag + " " + currRange + " " + radius * currRange + " " + currCenter.x + "/" + currCenter.y);
-                for (int i = 0; i < 6; i++)
-                {
-                    float angleRad = (60 * i - 30) * Mathf.Deg2Rad;
-                    Vector2 p = new Vector2(currCenter.x + radius * Mathf.Cos(angleRad), currCenter.y + radius * Mathf.Sin(angleRad));
-                    p.x = Mathf.Round(p.x * 1000) / 1000;
-                    p.y = Mathf.Round(p.y * 1000) / 1000;
-                    if (!seen.Contains(p))
+                    currCenter = t[j];
+                    for (int i = 0; i < 6; i++)
                     {
-                        seen.Add(p);
-                        AnchorHandler anchor = CreateAnchor(p);
-                        anchor.name = "Hex(" + currRange + ")[" + hexag + "][" + i + "]";
-                        anchors.Add(anchor);
+                        float angleRad = (60 * i - 30) * Mathf.Deg2Rad;
+                        Vector2 p = new Vector2(currCenter.x + radius * Mathf.Cos(angleRad), currCenter.y + radius * Mathf.Sin(angleRad));
+                        p.x = Mathf.Round(p.x * 1000) / 1000;
+                        p.y = Mathf.Round(p.y * 1000) / 1000;
+                        if (!seen.Contains(p))
+                        {
+                            seen.Add(p);
+                            AnchorHandler anchor = CreateAnchor(p);
+                            anchor.name = "Hex(" + currRange + ")[" + hexag + "][" + i + "]";
+                            anchors.Add(anchor);
 
+                        }
                     }
                 }
-                
-                
+                hexag++;
             }
             currRange++;
         }
+
+
+
+
+            
         return null;
     }
+    
     #endregion Tilling 
 }
