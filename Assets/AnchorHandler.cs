@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class AnchorHandler : MonoBehaviour {
-
+    public int strength;
     public bool occupied = false;
     Color color;
     SpriteRenderer sprite;
@@ -24,14 +24,14 @@ public class AnchorHandler : MonoBehaviour {
 
     private void OnMouseOver()
     {
-        if (GameHandler.BuildMode && !occupied) //check if in build mode
+        if (GameHandler.gm.CurrPlayerMove.playerMode == Player.PlayerMode.Build && !occupied) //check if in build mode
         {
             float d = Vector3.Distance(GameHandler.CurrDot.transform.position, transform.position); //calculates distance between currdot and this anchor
             OnHighlightStart(); //activate highlight
             if (Input.GetButton("Fire1")) //did the user left click?
             {
                 if (d < 10f)
-                    GameHandler.CurrPlayerMove.CreateNewNode(this);
+                    GameHandler.gm.CurrPlayerMove.CreateNewNode(this);
                 else OnRejectBuild();
             }
         }

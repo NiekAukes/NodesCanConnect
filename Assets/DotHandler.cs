@@ -35,16 +35,16 @@ public class DotHandler : MonoBehaviour {
     {
         GameHandler.OnOver = true;
         OnHighlightStart();
-        if (Input.GetButton("Fire2") && !GameHandler.BuildMode) //did the user right click?
+        if (Input.GetButton("Fire2") && !(GameHandler.gm.CurrPlayerMove.playerMode == Player.PlayerMode.Build)) //did the user right click?
         {
-            GameHandler.SwitchBuildMode();
+            GameHandler.gm.CurrPlayerMove.playerMode = Player.PlayerMode.Build;
             GameHandler.CurrDot = this;
             UpdateStrength(2);
             //updates strength and buildmode
         }
-        if (Input.GetButtonDown("Fire1") && GameHandler.BuildMode && GameHandler.CurrDot != this)
+        if (Input.GetButtonDown("Fire1") && GameHandler.gm.CurrPlayerMove.playerMode == Player.PlayerMode.Build && GameHandler.CurrDot != this)
         {
-            GameHandler.SwitchBuildMode();
+            GameHandler.gm.CurrPlayerMove.playerMode = Player.PlayerMode.Selection;
             GameHandler.CreateBindConnection(this);
             //calls a function that creates a new connection
         }

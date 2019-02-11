@@ -23,14 +23,14 @@ public class GameHandler : MonoBehaviour {
     {
         public enum TillingMode {None, Hexagonal, Triagonal, Random }
         public TillingMode tillingMode;
-        public int XLength, YLength;
+        public int Range;
         public float Radius;
     }
     public static GameHandler gm;
-    public static bool BuildMode = false, OnOver = false;
+    public static bool OnOver = false;
     public static DotHandler CurrDot;
-    public static Player CurrPlayerMove;
-    public static Queue<Player> PlayerList = new Queue<Player>();
+    public Player CurrPlayerMove;
+    public Queue<Player> PlayerList = new Queue<Player>();
     [SerializeField]private GameObject ConnectionPrefab, NodePrefab, AnchorPrefab; //AnchorPrefab
     [SerializeField]private DotHandler tst1, tst2, tst3; //declares Dots in code
     [SerializeField]private Transform ConnectionFolder, AnchorFolder, NodeFolder;
@@ -42,6 +42,8 @@ public class GameHandler : MonoBehaviour {
     // Use this for initialization
     void Start () {
         gm = this;
+        Debug.Log(PlayerList);
+        Player.SelectStartPlayer();
         if (!(tst1 == null) && !(tst2 == null) && !(tst3 == null))
         {
             CreateConnection(tst1, tst2); //draws connection between tst1 and tst2 (Debug)
@@ -49,15 +51,15 @@ public class GameHandler : MonoBehaviour {
             CreateConnection(tst1, tst3); //draws connection between tst1 and tst3 (Debug)
         }
         if (tilling.tillingMode == Tilling.TillingMode.Hexagonal)
-            HexagonalTilling(tilling.XLength, Mathf.FloorToInt(tilling.YLength/2) + 1, tilling.Radius);
-            HexagonalTilling(3, 3f);
+            HexagonalTilling(tilling.Range, tilling.Radius);
     }
 	
 	// Update is called once per frame
 	void Update () {
-        if (BuildMode && Input.GetButton("Fire2") && !OnOver) //if the user Right-clicked while in build mode, it disables buildmode
+        //Debug.Log(CurrPlayerMove);
+        if (CurrPlayerMove.playerMode == Player.PlayerMode.Build && Input.GetButton("Fire2") && !OnOver) //if the user Right-clicked while in build mode, it disables buildmode
         {
-            BuildMode = false;
+            CurrPlayerMove.playerMode = Player.PlayerMode.Selection;
             CurrDot = null;
         }
         
@@ -120,25 +122,10 @@ public class GameHandler : MonoBehaviour {
     #endregion StaticMethods
 
     #region Encapsulation
-    public static bool SwitchBuildMode()
-    {
-        BuildMode = !BuildMode;
-        return BuildMode;
-
-    }
-    public static Player GetCurrPlayer(Player p = null)
-    {
-        if (p != null)
-        {
-            CurrPlayerMove = p;
-        }
-        else
-            return CurrPlayerMove;
-        return null;
-    }
+    
     public static Player[] GetPlayerList()
     {
-        return PlayerList.ToArray();
+        return gm.PlayerList.ToArray();
     }
     public static GameObject GetConnectionPrefab()
     {
@@ -173,9 +160,11 @@ public class GameHandler : MonoBehaviour {
         bool Failed = false;
         if (!Failed)
         {
-            CurrPlayerMove = PlayerList.Dequeue();
-            PlayerList.Enqueue(CurrPlayerMove);
-            return CurrPlayerMove;
+            gm.CurrPlayerMove.playerMode = Player.PlayerMode.Idle;
+            gm.CurrPlayerMove = gm.PlayerList.Dequeue();
+            gm.PlayerList.Enqueue(gm.CurrPlayerMove);
+            gm.CurrPlayerMove.playerMode = Player.PlayerMode.Selection;
+            return gm.CurrPlayerMove;
         }
         else
         {
@@ -241,45 +230,72 @@ public class GameHandler : MonoBehaviour {
         List<AnchorHandler> anchors = new List<AnchorHandler>();
         Vector2 center = new Vector2(0f, 0f);
         Vector2 currCenter = center;
-        float deltaX = Mathf.Cos(60 * Mathf.Deg2Rad) * radius, deltaY = radius + radius * Mathf.Sin(60);
+        Vector2 N_vPos, P_vPos, N_vNeg, P_vNeg;
+        float deltaX = Mathf.Cos(60 * Mathf.Deg2Rad) * radius * Mathf.Sqrt(3f), deltaY = radius * 3/2;
 
         while (currRange != range)
         {
             int hexag;
-            Vector2 P_vPos = new Vector2(center.x + radius * currRange * Mathf.Sqrt(3f), 0);
-            Vector2 P_vNeg = new Vector2(center.x - radius * currRange * Mathf.Sqrt(3f), 0);
-            Vector2 N_vPos = P_vPos, N_vNeg = P_vNeg;
+            P_vPos = new Vector2(center.x + radius * currRange * Mathf.Sqrt(3f), 0);
+            N_vPos = new Vector2(center.x - radius * currRange * Mathf.Sqrt(3f), 0);
+            P_vNeg = P_vPos;
+            N_vNeg = N_vPos;
 
+            int iter = 0;
             hexag = 0;
-            while (hexag != range)
+            List<Vector2> t = new List<Vector2> {P_vPos, N_vPos};
+            while (hexag != currRange)
             {
                 
                 P_vPos = new Vector2(P_vPos.x - deltaX, P_vPos.y + deltaY);
                 P_vNeg = new Vector2(P_vNeg.x - deltaX, P_vNeg.y - deltaY);
-                N_vPos = new Vector2(N_vPos.x + deltaX, P_vPos.y + deltaY);
-                N_vNeg = new Vector2(N_vNeg.x + deltaX, P_vNeg.y - deltaY);
-                Vector2[] t = new Vector2[] {P_vPos, P_vNeg, N_vPos, N_vNeg};
-                for (int j = 0; j < 4; j++)
+                N_vPos = new Vector2(N_vPos.x + deltaX, N_vPos.y + deltaY);
+                N_vNeg = new Vector2(N_vNeg.x + deltaX, N_vNeg.y - deltaY);
+                t.Add(P_vPos);
+                t.Add(P_vNeg);
+                t.Add(N_vPos);
+                t.Add(N_vNeg);
+
+                hexag++;
+            }
+            if (currRange > 1) 
+            {
+                
+                int p = currRange - 1;
+                Vector2 fillCenter = new Vector2(-(p - 1) * deltaX, currRange * radius * 3/2);
+                int h = 0;
+                while(h < p) 
                 {
-                    currCenter = t[j];
+                    t.Add(fillCenter);
+                    t.Add(new Vector2(fillCenter.x, -fillCenter.y));
+                    fillCenter = new Vector2(fillCenter.x + deltaX * 2, fillCenter.y);
+                    
+                    h++;
+                }
+            }
+            foreach(Vector2 c in t)
+                {
+                    
+                    currCenter = c;
+                    Debug.Log(c);
                     for (int i = 0; i < 6; i++)
                     {
                         float angleRad = (60 * i - 30) * Mathf.Deg2Rad;
                         Vector2 p = new Vector2(currCenter.x + radius * Mathf.Cos(angleRad), currCenter.y + radius * Mathf.Sin(angleRad));
-                        p.x = Mathf.Round(p.x * 1000) / 1000;
-                        p.y = Mathf.Round(p.y * 1000) / 1000;
+                        p.x = Mathf.Round(p.x * 10000) / 10000;
+                        p.y = Mathf.Round(p.y * 10000) / 10000;
                         if (!seen.Contains(p))
                         {
                             seen.Add(p);
                             AnchorHandler anchor = CreateAnchor(p);
-                            anchor.name = "Hex(" + currRange + ")[" + hexag + "][" + i + "]";
+                            anchor.name = "Hex(" + currRange + ")[" + iter + "][" + i + "]";
                             anchors.Add(anchor);
 
                         }
                     }
+                    iter++;
                 }
-                hexag++;
-            }
+            
             currRange++;
         }
 
