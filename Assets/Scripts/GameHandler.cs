@@ -31,9 +31,9 @@ public class GameHandler : MonoBehaviour {
     public static DotHandler CurrDot;
     public static Player CurrPlayerMove;
     public static Queue<Player> PlayerList = new Queue<Player>();
-    [SerializeField]private GameObject ConnectionPrefab, NodePrefab, AnchorPrefab; //AnchorPrefab
+    public GameObject ConnectionPrefab, NodePrefab, AnchorPrefab; //AnchorPrefab
     [SerializeField]private DotHandler tst1, tst2, tst3; //declares Dots in code
-    [SerializeField]private Transform ConnectionFolder, AnchorFolder, NodeFolder;
+    public Transform ConnectionFolder, AnchorFolder, NodeFolder;
     public Tilling tilling;
 
     #endregion Variables
@@ -50,7 +50,6 @@ public class GameHandler : MonoBehaviour {
         }
         if (tilling.tillingMode == Tilling.TillingMode.Hexagonal)
             HexagonalTilling(tilling.XLength, Mathf.FloorToInt(tilling.YLength/2) + 1, tilling.Radius);
-            HexagonalTilling(3, 3f);
     }
 	
 	// Update is called once per frame
@@ -60,16 +59,20 @@ public class GameHandler : MonoBehaviour {
             BuildMode = false;
             CurrDot = null;
         }
+        if (Input.GetKey(KeyCode.Tab))
+        {
+            
+        }
         
     }
 
     #endregion RuntimeHandlers
 
     #region StaticMethods
-    public static AnchorHandler CreateAnchor(Vector2 Position) ///Creates Anchor on Position Parameter
+    public static DotHandler CreateAnchor(Vector2 Position) ///Creates Anchor on Position Parameter
     {
         GameObject gm_Anchor = Instantiate(gm.AnchorPrefab, Position, Quaternion.Euler(0f, 0f, 0f), gm.AnchorFolder);
-        AnchorHandler anchor = gm_Anchor.GetComponent<AnchorHandler>();
+        DotHandler anchor = gm_Anchor.GetComponent<DotHandler>();
         return anchor;
     }
 
@@ -91,6 +94,8 @@ public class GameHandler : MonoBehaviour {
         }
         ConnectTemp.DrawConnection();
         temp.name = Origin.name + "-" + Destination.name;
+        Origin.Connections.Add(ConnectTemp);
+        Destination.Connections.Add(ConnectTemp);
         return ConnectTemp;
     }
 
@@ -188,11 +193,11 @@ public class GameHandler : MonoBehaviour {
     #region Tilling
 
 
-    public static AnchorHandler[] HexagonalTilling(int rangeX, int rangeY, float radius) ///Hexagonal Tilling
+    public static DotHandler[] HexagonalTilling(int rangeX, int rangeY, float radius) ///Hexagonal Tilling
     {
 
         List<Vector2> seen = new List<Vector2>();
-        List<AnchorHandler> anchors = new List<AnchorHandler>();
+        List<DotHandler> anchors = new List<DotHandler>();
         Vector2 center = new Vector2(0f, 0f);
         int posX = 0;
         int posY = 0;
@@ -210,7 +215,7 @@ public class GameHandler : MonoBehaviour {
                 if (!seen.Contains(p))
                 {
                     seen.Add(p);
-                    AnchorHandler anchor = CreateAnchor(p);
+                    DotHandler anchor = CreateAnchor(p);
                     anchor.name = "Hex(" + posX + ", " + posY + ")[" + i + "]";
                     anchors.Add(anchor);
 
@@ -234,11 +239,11 @@ public class GameHandler : MonoBehaviour {
         return anchors.ToArray();
     }
 
-    public static AnchorHandler[] HexagonalTilling(int range, float radius) ///Hexagonal Tilling
+    public static DotHandler[] HexagonalTilling(int range, float radius) ///Hexagonal Tilling
     {
         int currRange = 0;
         List<Vector2> seen = new List<Vector2>();
-        List<AnchorHandler> anchors = new List<AnchorHandler>();
+        List<DotHandler> anchors = new List<DotHandler>();
         Vector2 center = new Vector2(0f, 0f);
         Vector2 currCenter = center;
         float deltaX = Mathf.Cos(60 * Mathf.Deg2Rad) * radius, deltaY = radius + radius * Mathf.Sin(60);
@@ -271,7 +276,7 @@ public class GameHandler : MonoBehaviour {
                         if (!seen.Contains(p))
                         {
                             seen.Add(p);
-                            AnchorHandler anchor = CreateAnchor(p);
+                            DotHandler anchor = CreateAnchor(p);
                             anchor.name = "Hex(" + currRange + ")[" + hexag + "][" + i + "]";
                             anchors.Add(anchor);
 

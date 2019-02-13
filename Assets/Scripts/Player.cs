@@ -10,6 +10,15 @@ public class Player : MonoBehaviour {
     [SerializeField]private float ScrollSpeed = 1;
     public bool isTurn = false;
     public bool StartPlayer;
+    public enum PlayerMode
+    {
+        Select,
+        Build
+    }
+    public PlayerMode playerMode;
+
+
+  
 
     public void Start()
     {
@@ -32,21 +41,10 @@ public class Player : MonoBehaviour {
         }
     }
 
-    public DotHandler CreateNewNode(AnchorHandler anchor) //will create a new node and connection with initialization when called
+    public DotHandler CreateNewNode(DotHandler anchor) //will create a new node and connection with initialization when called
     {
-        GameObject temp = Instantiate(GameHandler.GetNodePrefab(), GameHandler.GetNodeFolder());
-        DotHandler node = temp.GetComponent<DotHandler>();
-        node.Owner = this;
-        playerDotHandlers.Add(node);
-        //this will create a new node 
-        temp.transform.position = anchor.transform.position;
-        GameHandler.CreateConnection(GameHandler.CurrDot, node);
-        GameHandler.CurrDot.UpdateStrength(-2);
-        //initialization of the new node and creation of a new connection
-        anchor.occupied = true;
-        GameHandler.SwitchBuildMode();
-        //applies buildmode and anchor updates
-        return node;
+        anchor.UpdateStrength(1);
+        return anchor;
     }
 
 
