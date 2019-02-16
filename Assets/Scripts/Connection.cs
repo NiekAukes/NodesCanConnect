@@ -42,6 +42,45 @@ public class Connection : MonoBehaviour {
         return c;
     }
 
+    public Connection AbstractDraw(Vector2 Begin, Vector2 End)
+    {
+        length = Vector2.Distance(a: Begin, b: End);
+        tst = Mathf.Abs(Begin.y - End.y) / (Begin.x - End.x);
+        DeltaY = Mathf.Abs(Begin.y - End.y);
+        DeltaX = Mathf.Abs(Begin.x - End.x);
+        transform.position = new Vector3((DeltaX / 2) + Mathf.Min(Begin.x, End.x), (DeltaY / 2) + Mathf.Min(Begin.y, End.y));
+
+        rotationZ = 90 - Mathf.Atan(tst) * Mathf.Rad2Deg;
+        cube.localScale = new Vector3(0.03f, length / 5.75f, 0.1f);
+        cube.rotation = Quaternion.Euler(0, 0, rotationZ);
+        return this;
+    }
+
+    public Connection InitializeAbstractConnection(DotHandler Origin, DotHandler Destination)
+    {
+        Connection ConnectTemp = GetComponent<Connection>();
+        ConnectTemp.cube = GetComponentInChildren<SpriteRenderer>().transform;
+        if (Destination.transform.position.y > Origin.transform.position.y)
+        {
+            ConnectTemp.origin = Origin;
+            ConnectTemp.destination = Destination;
+        }
+        else
+        {
+            ConnectTemp.origin = Destination;
+            ConnectTemp.destination = Origin;
+        }
+        ConnectTemp.DrawConnection();
+        name = Origin.name + "-" + Destination.name;
+        Origin.Connections.Add(ConnectTemp);
+        Destination.Connections.Add(ConnectTemp);
+        return ConnectTemp;
+    }
+
+    private void OnDestroy()
+    {
+        
+    }
 
 
 }

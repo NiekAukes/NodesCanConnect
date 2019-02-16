@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour {
-    [SerializeField]private Camera cam;
+    public Camera cam;
     public List<DotHandler> playerDotHandlers = new List<DotHandler>();
     [SerializeField]private float speed = 1;
     [SerializeField]private float ScrollSpeed = 1;

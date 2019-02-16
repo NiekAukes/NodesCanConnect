@@ -31,7 +31,7 @@ public class GameHandler : MonoBehaviour {
     public static DotHandler CurrDot;
     public static Player CurrPlayerMove;
     public static Queue<Player> PlayerList = new Queue<Player>();
-    public GameObject ConnectionPrefab, NodePrefab, AnchorPrefab; //AnchorPrefab
+    public GameObject ConnectionPrefab, NodePrefab, AnchorPrefab, FragmentPrefab; //AnchorPrefab
     [SerializeField]private DotHandler tst1, tst2, tst3; //declares Dots in code
     public Transform ConnectionFolder, AnchorFolder, NodeFolder;
     public Tilling tilling;
@@ -54,14 +54,16 @@ public class GameHandler : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (BuildMode && Input.GetButton("Fire2") && !OnOver) //if the user Right-clicked while in build mode, it disables buildmode
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
-            BuildMode = false;
-            CurrDot = null;
+            foreach(DotHandler d in CurrPlayerMove.playerDotHandlers)
+            {
+                d.UpdateStrength(1);
+            }
         }
-        if (Input.GetKey(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            
+            Application.Quit();
         }
         
     }
