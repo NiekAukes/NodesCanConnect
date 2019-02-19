@@ -4,16 +4,14 @@ using System.Collections.Generic;
 
 public class GameHandler : MonoBehaviour {
     /* To-Do
-     * -Move Static Methods to GameHandler - #Done
-     * -Add Highlights OnMouseOver etc. - #working
-     * -Add NodeOwners - #Working
-     * -Add Strength interaction 
+     * 
+     * 
+     * 
+     * 
      * 
      */
 
     /* Bugs-To-Fix
-     * second choise RC on anchor doesn't call OnHighlightExit - Will be fixed on Future Build
-     * Player Movement doesn't work
         */
 
 

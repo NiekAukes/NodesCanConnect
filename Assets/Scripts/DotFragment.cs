@@ -5,10 +5,23 @@ using UnityEngine;
 public class DotFragment : MonoBehaviour
 {
     public DotHandler MainDot;
+    public SpriteRenderer Frame;
+    public SpriteRenderer Outline;
     public int level;
     private void Start()
     {
 
+    }
+
+    public void Draw()
+    {
+        float scalelevel = 0.2f;
+        gameObject.transform.localScale = new Vector3(level * scalelevel + 0.2f, level * scalelevel + 0.2f, gameObject.transform.localScale.z);
+        Outline.sortingOrder =  10 - level * 2;
+        Frame.sortingOrder = Outline.sortingOrder + 1;
+        //scaling
+        Debug.Log("Scaled: " + level);
+        //more drawing
     }
 
     private void OnMouseOver()

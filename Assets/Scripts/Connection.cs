@@ -10,7 +10,6 @@ public class Connection : MonoBehaviour {
 
     private void Start()
     {
-        DrawConnection(); //draws connection from start (useful for predefined Connections)
     }
 
     public Connection DrawConnection() //draws new connection for the current connection
@@ -60,6 +59,8 @@ public class Connection : MonoBehaviour {
     {
         Connection ConnectTemp = GetComponent<Connection>();
         ConnectTemp.cube = GetComponentInChildren<SpriteRenderer>().transform;
+        Debug.Log("Origin: " + Origin);
+        Debug.Log("Destination: " + Destination);
         if (Destination.transform.position.y > Origin.transform.position.y)
         {
             ConnectTemp.origin = Origin;
