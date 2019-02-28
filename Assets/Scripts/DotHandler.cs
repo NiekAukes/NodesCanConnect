@@ -3,22 +3,190 @@ using UnityEngine;
 using TMPro;
 
 public class DotHandler : MonoBehaviour {
+    public class ClickRegist
+    {
+        /*
+         ExitCodes:
+         0: An Error Occurred
+         1: Player Clicked on Same Node
+         2: Couldn't move energy because not enough energy was selected
+         3: Couldn't take over empty dot, not enough energy was selected
+             */
+        public DotHandler selectedDot;
+        public DotHandler selectedDotBefore;
+        public int energyOnSelect;
+        public Connection AbsConnection;
+        public bool OnDrag = false;
+        float counter = 0;
+        public ClickRegist(DotHandler selectdot, DotFragment d = null)
+        {
+            selectedDot = selectdot;
+            if (d == null)
+                energyOnSelect = selectedDot.Strength;
+            else
+                energyOnSelect = selectedDot.Strength - d.level + 1;
+            AbsConnection = CreateConnection(selectedDot.transform.position, selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition));
+
+            energyOnSelect = selectedDot.Strength - d.level + 1;
+            selectedDot.OnDrag = true;
+        }
+        public void OnUpdate()
+        {
+            if (!(selectedDot.transform.position.y > selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition).y))
+                AbsConnection.AbstractDraw(selectedDot.transform.position, selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition));
+            else
+                AbsConnection.AbstractDraw(selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition), selectedDot.transform.position);
+            //counter for dragging
+            if (counter > 0.3)
+            {
+                counter = 0;
+                Debug.Log("Ondrag");
+                OnDrag = true;
+            }
+            else
+                counter += Time.deltaTime;
+        }
+        public void OnRegisterEnter(DotHandler node)
+        {
+            Debug.Log("Transit");
+            selectedDotBefore = selectedDot;
+            selectedDot = node;
+        }
+        public void OnRegisterRelease()
+        {
+            try
+            {
+                
+                if (OnDrag)
+                {
+                    foreach(DotHandler d in FindObjectsOfType<DotHandler>())
+                    {
+                        if (d.OnMouse)
+                        {
+                            selectedDotBefore = selectedDot;
+                            selectedDot = d;
+                            break;
+                        }
+                    }
+                    
+                }
+                if (selectedDot.Owner != null)
+                {
+                    if (selectedDotBefore != null)
+                    {
+                        if (GameHandler.CurrPlayerMove.playerDotHandlers.Contains(selectedDot))
+                        {
+                            //establish Connection or Move Energy or wants to cancel
+                            if (selectedDot == selectedDotBefore && selectedDotBefore != null)
+                            {
+                                CancelBuild(1);
+                            }
+                            else
+                            {
+                                //Establish connection or Move Energy
+                                bool flag_connectionExist = false;
+                                foreach (Connection c in FindObjectsOfType<Connection>())
+                                {
+                                    if (c != AbsConnection)
+                                    {
+
+                                        if ((c.origin == selectedDot && c.destination == selectedDotBefore) || (c.origin == selectedDotBefore || c.destination == selectedDot) && (c.destination != null && c.origin != null))
+                                        {
+                                            flag_connectionExist = true;
+                                            Debug.Log("flag exists");
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (flag_connectionExist)
+                                {
+                                    if (energyOnSelect < selectedDotBefore.Strength)
+                                    {
+                                        selectedDot.OnDrag = false;
+                                        Destroy(AbsConnection.gameObject);
+                                        AbsConnection = null;
+                                        OnBuildEnd();
+                                        EnergyMove(selectedDotBefore, selectedDot, energyOnSelect);
+                                        Debug.Log("Move Energy // " + energyOnSelect);
+                                        //move Energy
+                                    }
+                                    else
+                                    {
+                                        CancelBuild(2);
+                                    }
+                                }
+                                else
+                                {
+                                    selectedDot.OnDrag = false;
+                                    Debug.Log("Creating Connection  //  " + selectedDot + "  //  " + selectedDotBefore + "  //  " + this);
+                                    AbsConnection.InitializeAbstractConnection(selectedDotBefore, selectedDot);  //CreateConnection(selectedDot, selectedDotBefore);
+                                    AbsConnection = null;
+                                    OnBuildEnd();
+                                    //Establish connection
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+                else
+                {
+                    //Dot without owner
+
+                    if (energyOnSelect > 1 && selectedDotBefore.Strength > 2 && selectedDotBefore.Strength != energyOnSelect)
+                    {
+                        
+                        selectedDot.OnDrag = false;
+                        selectedDot.Owner = selectedDotBefore.Owner;
+                        Debug.Log("Creating Connection  //  " + selectedDot + "  //  " + selectedDotBefore);
+                        AbsConnection.InitializeAbstractConnection(selectedDotBefore, selectedDot);  //CreateConnection(selectedDot, selectedDotBefore);
+                        AbsConnection = null;
+                        Debug.Log("Taken over dot: " + this);
+                        EnergyMove(selectedDotBefore, selectedDot, energyOnSelect, 1);
+                        GameHandler.CurrPlayerMove.playerDotHandlers.Add(selectedDot);
+                        OnBuildEnd();
+                        //Taking over empty dot
+                    }
+                    else
+                    {
+                        CancelBuild(3);
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                CancelBuild(0, e);
+            }
+    }
+        public void CancelBuild(int exitcode, System.Exception e = null)
+        {
+            OnBuildEnd();
+            Destroy(AbsConnection.gameObject);
+            Debug.Log("cancelled, exitcode: " + exitcode);
+            if (exitcode == 0)
+                Debug.LogError(e);
+            //cancelled
+        }
+
+        public void OnBuildEnd()
+        {
+            Debug.Log("Ended Build");
+            OnDrag = false;
+            clickRegist = null;
+        }
+    }
     public bool OnMouse = false;
     public bool OnDrag = false;
     public int Strength = 0;
-    public static DotHandler selectedDot;
-    static DotHandler tempSelectedDot = null;
-    public static Connection AbsConnection;
-    public static int energyOnSelect;
     public GameObject Gfx;
-    Collider2D w;
     TextMeshPro text;
-    float counter = 0;
     public Player Owner;
     public List<Connection> Connections = new List<Connection>();
     public List<DotFragment> DotFragments = new List<DotFragment>();
     Color color;
     SpriteRenderer sprite;
+    public static ClickRegist clickRegist;
     #region RuntimeHandlers
     // Use this for initialization
     void Start () {
@@ -32,19 +200,10 @@ public class DotHandler : MonoBehaviour {
 	
 	// Update is called once per frame
 	void LateUpdate () {
-        if (OnDrag && selectedDot == this && AbsConnection != null)
+        if (clickRegist != null)
         {
-            if (!(selectedDot.transform.position.y > Owner.cam.ScreenToWorldPoint(Input.mousePosition).y))
-                AbsConnection.AbstractDraw(selectedDot.transform.position, Owner.cam.ScreenToWorldPoint(Input.mousePosition));
-            else
-                AbsConnection.AbstractDraw(Owner.cam.ScreenToWorldPoint(Input.mousePosition), selectedDot.transform.position);
-            if (counter > 0.3)
-            {
-                GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Build;
-                counter = 0;
-            }
-            else
-                counter += Time.deltaTime;
+            if (clickRegist.selectedDot == this && clickRegist.AbsConnection != null)
+                clickRegist.OnUpdate();
         }
     }
 
@@ -60,159 +219,29 @@ public class DotHandler : MonoBehaviour {
     }
     private void OnMouseDown()
     {
-        OnRegisterEnter(null);
+        if (clickRegist == null)
+        {
+            //first clicked
+            clickRegist = new ClickRegist(this);
+            Debug.Log("first clicked");
+        }
+        else
+        {
+            //second clicked
+            clickRegist.OnRegisterEnter(this);
+            Debug.Log("second clicked");
+        }
     }
     private void OnMouseUp()
     {
-        OnRegisterRelease();
+        clickRegist.OnRegisterRelease();
     }
 
 
 
     #endregion RuntimeMethods
     #region ClickRegister
-    public void OnRegisterEnter(DotFragment dotFragment)
-    {
-       
-        switch (GameHandler.CurrPlayerMove.playerMode)
-        {
-            case Player.PlayerMode.Build:
-
-                break;
-            case Player.PlayerMode.Select:
-                tempSelectedDot = this;
-                AbsConnection = CreateConnection(transform.position, Owner.cam.ScreenToWorldPoint(Input.mousePosition));
-                Debug.Log(dotFragment.level);
-                
-                energyOnSelect = Strength - dotFragment.level + 1;
-                OnDrag = true;
-                break;
-        }
-    }
-    public void OnRegisterRelease()
-    {
-        DotHandler MouseDotHandler = null;
-        foreach (DotHandler d in FindObjectsOfType<DotHandler>())
-        {
-            Debug.Log("Searching in: " + d);
-            if (d.OnMouse)
-            {
-                MouseDotHandler = d;
-            }
-        }
-        Debug.Log("Release");
-        if (Owner != null)
-        {
-            switch (GameHandler.CurrPlayerMove.playerMode)
-            {
-                case Player.PlayerMode.Build:
-                    Debug.Log("in build mode");
-                   
-                    if (GameHandler.CurrPlayerMove.playerDotHandlers.Contains(this))
-                    {
-                        //establish Connection or Move Energy or wants to cancel
-                        if (selectedDot == this)
-                        {
-                            CancelBuild();
-                        }
-                        else
-                        {
-                            //Establish connection or Move Energy
-                            bool flag_connectionExist = false;
-                            foreach (Connection c in FindObjectsOfType<Connection>())
-                            {
-                                if (c != AbsConnection)
-                                {
-
-                                    Debug.Log((c.origin == selectedDot || c.destination == selectedDot) + "  selectdotcheck");
-                                    Debug.Log((c.origin == MouseDotHandler || c.destination == MouseDotHandler) + "  mousedotcheck");
-                                    if ((c.origin == selectedDot && c.destination == MouseDotHandler) || (c.origin == MouseDotHandler || c.destination == selectedDot) && (c.destination != null && c.origin != null))
-                                    {
-                                        flag_connectionExist = true;
-                                        Debug.Log("flag exists");
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (flag_connectionExist)
-                            {
-                                if (energyOnSelect > 1)
-                                {
-                                    OnDrag = false;
-                                    Destroy(AbsConnection.gameObject);
-                                    AbsConnection = null;
-                                    GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Select;
-                                    EnergyMove(tempSelectedDot, MouseDotHandler, energyOnSelect);
-                                }
-                                else
-                                {
-                                    CancelBuild();
-                                }
-
-                                //Move Energy
-                            }
-                            else
-                            {
-                                OnDrag = false;
-                                Debug.Log("Creating Connection  //  " + selectedDot + "  //  " + MouseDotHandler + "  //  " + this);
-                                AbsConnection.InitializeAbstractConnection(tempSelectedDot, MouseDotHandler);  //CreateConnection(selectedDot, MouseDotHandler);
-                                AbsConnection = null;
-                                GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Select;
-                                //Establish connection
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (MouseDotHandler.Strength == 0 && MouseDotHandler.Owner == null)
-                        {
-                            OnDrag = false;
-                            Debug.Log("Creating Connection  //  " + selectedDot + "  //  " + MouseDotHandler + "  //  " + this);
-                            AbsConnection.InitializeAbstractConnection(tempSelectedDot, MouseDotHandler);  //CreateConnection(selectedDot, MouseDotHandler);
-                            AbsConnection = null;
-                            GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Select;
-                            Debug.Log("Taken over dot: " + this);
-                            //handle empty dot takeover
-                        }
-                        else if (MouseDotHandler.Owner != Owner)
-                        {
-                            //player wants to attack other dot
-                        }
-
-                    }
-                    break;
-
-                case Player.PlayerMode.Select:
-                    GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Build;
-                    Debug.Log("current mode: " + GameHandler.CurrPlayerMove.playerMode);
-                    tempSelectedDot = this;
-                    break;
-            }
-            Debug.Log(energyOnSelect);
-            selectedDot = tempSelectedDot;
-        }
-        else
-        {
-            //Dot without owner
-            OnDrag = false;
-            Owner = selectedDot.Owner;
-            Debug.Log("Creating Connection  //  " + selectedDot + "  //  " + MouseDotHandler + "  //  " + this);
-            AbsConnection.InitializeAbstractConnection(tempSelectedDot, MouseDotHandler);  //CreateConnection(selectedDot, MouseDotHandler);
-            AbsConnection = null;
-            GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Select;
-            Debug.Log("Taken over dot: " + this);
-            //Taking over empty dot
-        }
-    }
-    public void CancelBuild()
-    {
-        GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Select;
-        Destroy(AbsConnection.gameObject);
-        Debug.Log("cancelled");
-        tempSelectedDot = null;
-        //cancelled
-    }
+   
     #endregion ClickRegister
     #region DrawMethods
     ///DrawMethod for Reject
@@ -247,10 +276,10 @@ public class DotHandler : MonoBehaviour {
 
     #endregion DrawMethods
     #region UtilityMehtods
-    public static void EnergyMove(DotHandler from, DotHandler to, int Amount)
+    public static void EnergyMove(DotHandler from, DotHandler to, int Amount, int evaporation = 0)
     {
         from.UpdateStrength(-Amount);
-        to.UpdateStrength(Amount);
+        to.UpdateStrength(Amount - evaporation);
     }
 
     public static Connection CreateConnection(DotHandler Origin, DotHandler Destination) //static form for ConnectionCreation
@@ -334,8 +363,8 @@ public class DotHandler : MonoBehaviour {
         {
             for (int i = 0; i > increment; i--)
             {
-                Destroy(DotFragments[-1]);
-
+                Destroy(DotFragments[DotFragments.Count-1].gameObject);
+                DotFragments.RemoveAt(DotFragments.Count - 1);
             }
         }
         Strength += increment;

@@ -40,6 +40,8 @@ public class GameHandler : MonoBehaviour {
     // Use this for initialization
     void Start () {
         gm = this;
+        Application.targetFrameRate = 300;
+        QualitySettings.vSyncCount = 0;
         if (!(tst1 == null) && !(tst2 == null) && !(tst3 == null))
         {
             CreateConnection(tst1, tst2); //draws connection between tst1 and tst2 (Debug)

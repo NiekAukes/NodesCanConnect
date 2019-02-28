@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class DotFragment : MonoBehaviour
 {
+    public bool OnmouseDown = false;
     public DotHandler MainDot;
     public SpriteRenderer Frame;
     public SpriteRenderer Outline;
@@ -18,6 +19,7 @@ public class DotFragment : MonoBehaviour
         float scalelevel = 0.2f;
         gameObject.transform.localScale = new Vector3(level * scalelevel + 0.2f, level * scalelevel + 0.2f, gameObject.transform.localScale.z);
         Outline.sortingOrder =  10 - level * 2;
+        gameObject.transform.position = new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, 0.1f * level);
         Frame.sortingOrder = Outline.sortingOrder + 1;
         //scaling
         Debug.Log("Scaled: " + level);
@@ -26,53 +28,32 @@ public class DotFragment : MonoBehaviour
 
     private void OnMouseOver()
     {
+        OnmouseDown = true;
         MainDot.OnMouse = true;
     }
     private void OnMouseExit()
     {
+        OnmouseDown = false;
         MainDot.OnMouse = false;
     }
     private void OnMouseDown()
     {
-
-        MainDot.OnRegisterEnter(this);
-        /*
-        if (!MainDot.OnMouse)
+        if (DotHandler.clickRegist == null)
         {
-        Debug.Log("I clicked");
-            switch (GameHandler.CurrPlayerMove.playerMode)
-            {
-                case Player.PlayerMode.Build:
-                    if (MainDot.Owner == GameHandler.CurrPlayerMove)
-                    {
-                        Debug.Log(DotHandler.selectedDot + "  //  " + MainDot + "  //  " + (DotHandler.selectedDot == this.MainDot));
-                        //establish Connection or Move Energy or wnats to cancel
-                        if (DotHandler.selectedDot == this.MainDot)
-                        {
-                            GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Select;
-                            Debug.Log("current mode: " + GameHandler.CurrPlayerMove.playerMode);
-                            //cancelled
-                        }
-                    }
-                    else
-                    {
-                        //attack other Dot (not yet established)
-
-                    }
-                    break;
-
-                case Player.PlayerMode.Select:
-                    Debug.Log("current mode: " + GameHandler.CurrPlayerMove.playerMode);
-                    GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Build;
-                    DotHandler.selectedDot = MainDot;
-                    break;
-            }
-        }*/
+            //first clicked
+            DotHandler.clickRegist = new DotHandler.ClickRegist(MainDot, this);
+            Debug.Log("first clicked");
+        }
+        else
+        {
+            //second clicked
+            DotHandler.clickRegist.OnRegisterEnter(MainDot);
+            Debug.Log("Second Clicked");
+        }
     }
     private void OnMouseUp()
     {
-        MainDot.OnRegisterRelease();
-        //GameHandler.CurrPlayerMove.playerMode = Player.PlayerMode.Build;
+        DotHandler.clickRegist.OnRegisterRelease();
     }
 
     //Detect if player wants to establish connection | move Energy | Attack dot --finished
