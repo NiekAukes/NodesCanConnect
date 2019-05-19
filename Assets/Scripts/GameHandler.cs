@@ -3,16 +3,6 @@ using UnityEngine.Networking;
 using System.Collections.Generic;
 
 public class GameHandler : MonoBehaviour {
-    /* To-Do
-     * 
-     * 
-     * 
-     * 
-     * 
-     */
-
-    /* Bugs-To-Fix
-        */
 
 
     #region Variables
@@ -27,8 +17,6 @@ public class GameHandler : MonoBehaviour {
     public static GameHandler gm;
     public static bool BuildMode = false, OnOver = false;
     public static DotHandler CurrDot;
-    public static Player CurrPlayerMove;
-    public static Queue<Player> PlayerList = new Queue<Player>();
     public GameObject ConnectionPrefab, NodePrefab, AnchorPrefab, FragmentPrefab; //AnchorPrefab
     [SerializeField]private DotHandler tst1, tst2, tst3; //declares Dots in code
     public Transform ConnectionFolder, AnchorFolder, NodeFolder;
@@ -56,7 +44,7 @@ public class GameHandler : MonoBehaviour {
 	void Update () {
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            foreach(DotHandler d in CurrPlayerMove.playerDotHandlers)
+            foreach(DotHandler d in RoundHandler.CurrPlayerMove.playerDotHandlers)
             {
                 d.UpdateStrength(1);
             }
@@ -137,15 +125,15 @@ public class GameHandler : MonoBehaviour {
     {
         if (p != null)
         {
-            CurrPlayerMove = p;
+            RoundHandler.CurrPlayerMove = p;
         }
         else
-            return CurrPlayerMove;
+            return RoundHandler.CurrPlayerMove;
         return null;
     }
     public static Player[] GetPlayerList()
     {
-        return PlayerList.ToArray();
+        return RoundHandler.PlayerList.ToArray();
     }
     public static GameObject GetConnectionPrefab()
     {
@@ -174,23 +162,6 @@ public class GameHandler : MonoBehaviour {
 
     #endregion Encapsulation
 
-    #region RoundHandler
-    public static Player NextPlayer()
-    {
-        bool Failed = false;
-        if (!Failed)
-        {
-            CurrPlayerMove = PlayerList.Dequeue();
-            PlayerList.Enqueue(CurrPlayerMove);
-            return CurrPlayerMove;
-        }
-        else
-        {
-            Debug.LogError("Failed to Switch to next player");
-            return null;
-        }
-    }
-    #endregion RoundHandler
 
     #region Tilling
 

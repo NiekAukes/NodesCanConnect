@@ -4,15 +4,34 @@ using UnityEngine;
 
 public class RoundHandler : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public static Player CurrPlayerMove;
+    public static Queue<Player> PlayerList = new Queue<Player>();
 
-    // Update is called once per frame
-    void Update()
+    public static Player NextPlayer()
     {
-        
+        bool Failed = false;
+        if (!Failed)
+        {
+            CurrPlayerMove = PlayerList.Dequeue();
+            PlayerList.Enqueue(CurrPlayerMove);
+            CurrPlayerMove.cam.enabled = false;
+
+            CurrPlayerMove = PlayerList.ToArray()[0];
+            CurrPlayerMove.cam.enabled = true;
+            Debug.Log("Next round // " + CurrPlayerMove);
+            return CurrPlayerMove;
+        }
+        else
+        {
+            Debug.LogError("Failed to Switch to next player");
+            return null;
+        }
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            NextPlayer();
+        }
     }
 }

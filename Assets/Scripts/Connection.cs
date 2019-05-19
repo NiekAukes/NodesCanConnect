@@ -4,13 +4,75 @@ using UnityEngine.Networking;
 public class Connection : MonoBehaviour {
     public DotHandler origin, destination; // declares DotHandler vars
     public Transform cube; //declares transform
+    public Collider2D collider;
     
 
     public float length, rotationZ, tst, DeltaX, DeltaY; //declares float vars
 
-    private void Start()
+    public ContactFilter2D t;
+    static LayerMask mask;
+    public bool cannotBuild = false;
+
+    private void Awake()
     {
+        mask = LayerMask.GetMask("Connection");
+        collider = GetComponentInChildren<Collider2D>();
     }
+    private void Update()
+    {
+        bool flag_onmouse = false;
+        foreach (Player p in RoundHandler.PlayerList)
+        {
+            foreach (DotHandler d in p.playerDotHandlers)
+            {
+                if (d.OnMouse)
+                {
+                    flag_onmouse = true;
+                }
+            }
+        }
+        if (!flag_onmouse)
+        {
+            if (collider.IsTouching(t))
+            {
+                Collider2D[] contacts = new Collider2D[10];
+                collider.GetContacts(t, contacts);
+                foreach (Collider2D retrievedcollider in contacts)
+                {
+
+                    if (retrievedcollider != null && retrievedcollider.gameObject.transform.parent != transform.parent)
+                    {
+                        cannotBuild = true;
+                        Debug.Log(retrievedcollider.gameObject.transform.parent + "  //  " + (retrievedcollider.gameObject.transform.parent != transform.parent));
+                    }
+
+                }
+            }
+            else
+            {
+                cannotBuild = false;
+                Debug.Log("not touching");
+            }
+        }
+        else
+        {
+            cannotBuild = false;
+            Debug.Log("not touching");
+        }
+        if (DotHandler.clickRegist != null)
+        {
+            if (cannotBuild )
+            {
+                DotHandler.clickRegist.AbsConnection.cube.GetComponent<SpriteRenderer>().color = Color.red;
+            }
+            else
+            {
+                DotHandler.clickRegist.AbsConnection.cube.GetComponent<SpriteRenderer>().color = RoundHandler.CurrPlayerMove.playercolor;
+            }
+        }
+    }
+
+
 
     public Connection DrawConnection() //draws new connection for the current connection
     {
@@ -23,6 +85,7 @@ public class Connection : MonoBehaviour {
         rotationZ = 90 - Mathf.Atan(tst) * Mathf.Rad2Deg;
         cube.localScale = new Vector3(0.03f, length / 5.75f, 0.1f);
         cube.rotation = Quaternion.Euler(0, 0, rotationZ);
+        GetComponentInChildren<SpriteRenderer>().color = origin.Owner.playercolor;
         return this;
     }
 
@@ -37,7 +100,8 @@ public class Connection : MonoBehaviour {
         
         _rotationZ = 90 - Mathf.Atan(_tst) * Mathf.Rad2Deg; 
         c.cube.localScale = new Vector3(0.03f, _length / 5.75f, 0.1f);
-        c.cube.rotation = Quaternion.Euler(0, 0, _rotationZ); 
+        c.cube.rotation = Quaternion.Euler(0, 0, _rotationZ);
+        c.GetComponentInChildren<SpriteRenderer>().color = c.origin.Owner.playercolor;
         return c;
     }
 
@@ -75,6 +139,9 @@ public class Connection : MonoBehaviour {
         name = Origin.name + "-" + Destination.name;
         Origin.Connections.Add(ConnectTemp);
         Destination.Connections.Add(ConnectTemp);
+        cube.gameObject.layer = 8;
+        GetComponentInChildren<SpriteRenderer>().color = Origin.Owner.playercolor;
+        Debug.Log("updated color");
         return ConnectTemp;
     }
 

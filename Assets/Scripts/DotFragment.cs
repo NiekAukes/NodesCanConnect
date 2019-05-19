@@ -19,10 +19,12 @@ public class DotFragment : MonoBehaviour
         float scalelevel = 0.2f;
         gameObject.transform.localScale = new Vector3(level * scalelevel + 0.2f, level * scalelevel + 0.2f, gameObject.transform.localScale.z);
         Outline.sortingOrder =  10 - level * 2;
-        gameObject.transform.position = new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, 0.1f * level);
+        gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, 0.1f * level);
+        Debug.Log("scaled succesfully  //  " + gameObject.transform.localPosition + "  //  " + new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, 0.1f * level));
         Frame.sortingOrder = Outline.sortingOrder + 1;
         //scaling
         Debug.Log("Scaled: " + level);
+        Frame.color = MainDot.Owner.playercolor;
         //more drawing
     }
 
@@ -53,7 +55,8 @@ public class DotFragment : MonoBehaviour
     }
     private void OnMouseUp()
     {
-        DotHandler.clickRegist.OnRegisterRelease();
+        if (DotHandler.clickRegist != null)
+            DotHandler.clickRegist.OnRegisterRelease();
     }
 
     //Detect if player wants to establish connection | move Energy | Attack dot --finished

@@ -8,9 +8,12 @@ public class DotHandler : MonoBehaviour {
         /*
          ExitCodes:
          0: An Error Occurred
-         1: Player Clicked on Same Node
-         2: Couldn't move energy because not enough energy was selected
-         3: Couldn't take over empty dot, not enough energy was selected
+         1: Cancelled from outside class (check message)
+         2: Player Clicked on Same Node
+         3: Couldn't move energy because not enough energy was selected
+         4: Couldn't take over empty dot, not enough energy was selected
+         5: Couldn't create Connection, other connection interfering
+         6: Couldn't Select node, Player does not own this node
              */
         public DotHandler selectedDot;
         public DotHandler selectedDotBefore;
@@ -18,40 +21,66 @@ public class DotHandler : MonoBehaviour {
         public Connection AbsConnection;
         public bool OnDrag = false;
         float counter = 0;
+
+
         public ClickRegist(DotHandler selectdot, DotFragment d = null)
         {
+            Debug.Log(selectdot.Owner);
+            Debug.Log(RoundHandler.CurrPlayerMove);
+            if (selectdot.Owner != RoundHandler.CurrPlayerMove)
+            {
+                CancelBuild(6);
+            }
+            //checks if the player owns this node
+
             selectedDot = selectdot;
+
             if (d == null)
                 energyOnSelect = selectedDot.Strength;
             else
                 energyOnSelect = selectedDot.Strength - d.level + 1;
-            AbsConnection = CreateConnection(selectedDot.transform.position, selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition));
+            //initializes energy selected
 
-            energyOnSelect = selectedDot.Strength - d.level + 1;
+            AbsConnection = CreateConnection(selectedDot.transform.position, selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition));
+            AbsConnection.cube.gameObject.layer = 9;
             selectedDot.OnDrag = true;
+            //creates AbsConnection and sets drag to true
+
+            Debug.Log(energyOnSelect + "  //  " + d.level);
+            foreach(Connection c in selectdot.Connections)
+            {
+                c.cube.gameObject.layer = 9;
+            }
         }
         public void OnUpdate()
         {
+
             if (!(selectedDot.transform.position.y > selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition).y))
                 AbsConnection.AbstractDraw(selectedDot.transform.position, selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition));
             else
                 AbsConnection.AbstractDraw(selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition), selectedDot.transform.position);
+
+
             //counter for dragging
             if (counter > 0.3)
             {
                 counter = 0;
-                Debug.Log("Ondrag");
                 OnDrag = true;
             }
             else
                 counter += Time.deltaTime;
         }
+
+
         public void OnRegisterEnter(DotHandler node)
         {
-            Debug.Log("Transit");
             selectedDotBefore = selectedDot;
             selectedDot = node;
+            Debug.Log(selectedDotBefore + " // " + selectedDot);
+            OnDrag = false;
         }
+
+
         public void OnRegisterRelease()
         {
             try
@@ -70,16 +99,16 @@ public class DotHandler : MonoBehaviour {
                     }
                     
                 }
-                if (selectedDot.Owner != null)
+                if (selectedDot.Owner == RoundHandler.CurrPlayerMove)
                 {
                     if (selectedDotBefore != null)
                     {
-                        if (GameHandler.CurrPlayerMove.playerDotHandlers.Contains(selectedDot))
+                        if (RoundHandler.CurrPlayerMove.playerDotHandlers.Contains(selectedDot))
                         {
                             //establish Connection or Move Energy or wants to cancel
                             if (selectedDot == selectedDotBefore && selectedDotBefore != null)
                             {
-                                CancelBuild(1);
+                                CancelBuild(2);
                             }
                             else
                             {
@@ -90,7 +119,7 @@ public class DotHandler : MonoBehaviour {
                                     if (c != AbsConnection)
                                     {
 
-                                        if ((c.origin == selectedDot && c.destination == selectedDotBefore) || (c.origin == selectedDotBefore || c.destination == selectedDot) && (c.destination != null && c.origin != null))
+                                        if ((c.origin == selectedDot && c.destination == selectedDotBefore) || (c.origin == selectedDotBefore && c.destination == selectedDot) && (c.destination != null && c.origin != null))
                                         {
                                             flag_connectionExist = true;
                                             Debug.Log("flag exists");
@@ -113,17 +142,25 @@ public class DotHandler : MonoBehaviour {
                                     }
                                     else
                                     {
-                                        CancelBuild(2);
+                                        CancelBuild(3);
                                     }
                                 }
                                 else
                                 {
-                                    selectedDot.OnDrag = false;
-                                    Debug.Log("Creating Connection  //  " + selectedDot + "  //  " + selectedDotBefore + "  //  " + this);
-                                    AbsConnection.InitializeAbstractConnection(selectedDotBefore, selectedDot);  //CreateConnection(selectedDot, selectedDotBefore);
-                                    AbsConnection = null;
-                                    OnBuildEnd();
-                                    //Establish connection
+                                    if (!AbsConnection.cannotBuild)
+                                    {
+                                        selectedDot.OnDrag = false;
+                                        Debug.Log("Creating Connection  //  " + selectedDot + "  //  " + selectedDotBefore + "  //  " + this);
+                                        AbsConnection.InitializeAbstractConnection(selectedDotBefore, selectedDot);  //CreateConnection(selectedDot, selectedDotBefore);
+                                        AbsConnection = null;
+                                        OnBuildEnd();
+                                        EnergyMove(selectedDotBefore, selectedDot, energyOnSelect, 1);
+                                        //Establish connection
+                                    }
+                                    else
+                                    {
+                                        CancelBuild(5);
+                                    }
                                 }
                             }
                         }
@@ -132,40 +169,56 @@ public class DotHandler : MonoBehaviour {
                 }
                 else
                 {
-                    //Dot without owner
+                    //Dot without owner or Dot owned by other player
+                    if (selectedDot.Owner == null) {
+                        //Dot without owner
+                        Debug.Log((energyOnSelect) + "  //  " + (selectedDotBefore) + "  //  " + (selectedDot) + "  //  " + (selectedDotBefore.Strength != energyOnSelect));
+                        if (energyOnSelect > 1 && selectedDotBefore.Strength > 2 && selectedDotBefore.Strength != energyOnSelect && !AbsConnection.cannotBuild)
+                        {
 
-                    if (energyOnSelect > 1 && selectedDotBefore.Strength > 2 && selectedDotBefore.Strength != energyOnSelect)
-                    {
-                        
-                        selectedDot.OnDrag = false;
-                        selectedDot.Owner = selectedDotBefore.Owner;
-                        Debug.Log("Creating Connection  //  " + selectedDot + "  //  " + selectedDotBefore);
-                        AbsConnection.InitializeAbstractConnection(selectedDotBefore, selectedDot);  //CreateConnection(selectedDot, selectedDotBefore);
-                        AbsConnection = null;
-                        Debug.Log("Taken over dot: " + this);
-                        EnergyMove(selectedDotBefore, selectedDot, energyOnSelect, 1);
-                        GameHandler.CurrPlayerMove.playerDotHandlers.Add(selectedDot);
-                        OnBuildEnd();
-                        //Taking over empty dot
+                            selectedDot.OnDrag = false;
+                            selectedDot.Owner = selectedDotBefore.Owner;
+                            Debug.Log("Creating Connection  //  " + selectedDot + "  //  " + selectedDotBefore);
+                            AbsConnection.InitializeAbstractConnection(selectedDotBefore, selectedDot);  //CreateConnection(selectedDot, selectedDotBefore);
+                            AbsConnection = null;
+                            Debug.Log("Taken over dot: " + this);
+                            EnergyMove(selectedDotBefore, selectedDot, energyOnSelect, 1);
+                            RoundHandler.CurrPlayerMove.playerDotHandlers.Add(selectedDot);
+                            OnBuildEnd();
+                            //Taking over empty dot
+                        }
+                        else
+                        {
+                            CancelBuild(4);
+                        }
                     }
                     else
                     {
-                        CancelBuild(3);
+                        //player wants to attack other dot
+                        Debug.Log(RoundHandler.CurrPlayerMove + " attacks " + selectedDot.Owner);
+
+                        selectedDotBefore.UpdateStrength(-energyOnSelect);
+                        selectedDot.UpdateStrength(-energyOnSelect);
+
+                        if (AbsConnection != null)
+                            Destroy(AbsConnection.gameObject);
+                        OnBuildEnd();
                     }
                 }
             }
             catch (System.Exception e)
             {
-                CancelBuild(0, e);
+                CancelBuild(0, "", e);
             }
     }
-        public void CancelBuild(int exitcode, System.Exception e = null)
+        public void CancelBuild(int exitcode, string msg = "", System.Exception e = null)
         {
-            OnBuildEnd();
-            Destroy(AbsConnection.gameObject);
-            Debug.Log("cancelled, exitcode: " + exitcode);
+            if (AbsConnection != null)
+                Destroy(AbsConnection.gameObject);
+            Debug.Log(msg + " cancelled, exitcode: " + exitcode);
             if (exitcode == 0)
                 Debug.LogError(e);
+            OnBuildEnd();
             //cancelled
         }
 
@@ -173,6 +226,19 @@ public class DotHandler : MonoBehaviour {
         {
             Debug.Log("Ended Build");
             OnDrag = false;
+            foreach (Connection c in selectedDot.Connections)
+            {
+                c.cube.gameObject.layer = 8;
+            }
+            if (selectedDotBefore != null)
+            {
+                foreach (Connection c in selectedDotBefore.Connections)
+                {
+                    c.cube.gameObject.layer = 8;
+                }
+            }
+            selectedDot.UpdateRecognition();
+            selectedDotBefore.UpdateRecognition();
             clickRegist = null;
         }
     }
@@ -202,8 +268,12 @@ public class DotHandler : MonoBehaviour {
 	void LateUpdate () {
         if (clickRegist != null)
         {
-            if (clickRegist.selectedDot == this && clickRegist.AbsConnection != null)
+            if ((clickRegist.selectedDot == this && Strength != 0 && clickRegist.AbsConnection != null))
                 clickRegist.OnUpdate();
+        }
+        if (Input.GetButtonDown("Fire2") && clickRegist != null)
+        {
+            clickRegist.CancelBuild(1);
         }
     }
 
@@ -274,6 +344,18 @@ public class DotHandler : MonoBehaviour {
         sprite.color = new Color(255f, 0f, 0f);
     }
 
+    public void UpdateRecognition()
+    {
+        foreach (DotFragment d in DotFragments)
+        {
+            d.Frame.color = Owner.playercolor;
+        }
+        foreach (Connection c in Connections)
+        {
+            c.GetComponentInChildren<SpriteRenderer>().color = Owner.playercolor;
+        }
+    }
+
     #endregion DrawMethods
     #region UtilityMehtods
     public static void EnergyMove(DotHandler from, DotHandler to, int Amount, int evaporation = 0)
@@ -285,6 +367,7 @@ public class DotHandler : MonoBehaviour {
     public static Connection CreateConnection(DotHandler Origin, DotHandler Destination) //static form for ConnectionCreation
     {
         GameObject temp = Instantiate(GameHandler.gm.ConnectionPrefab, GameHandler.gm.ConnectionFolder) as GameObject;
+        temp.transform.position = new Vector3(temp.transform.position.x, temp.transform.position.y, 1f);
         Connection ConnectTemp = temp.GetComponent<Connection>();
         ConnectTemp.cube = temp.GetComponentInChildren<SpriteRenderer>().transform;
         if (Destination.transform.position.y > Origin.transform.position.y)
@@ -307,6 +390,7 @@ public class DotHandler : MonoBehaviour {
     public static Connection CreateConnection(Vector2 Origin, Vector2 Destination) //static form for ConnectionCreation
     {
         GameObject temp = Instantiate(GameHandler.gm.ConnectionPrefab, GameHandler.gm.ConnectionFolder) as GameObject;
+        temp.transform.position = new Vector3(temp.transform.position.x, temp.transform.position.y, 1);
         Connection ConnectTemp = temp.GetComponent<Connection>();
         ConnectTemp.cube = temp.GetComponentInChildren<SpriteRenderer>().transform;
         ConnectTemp.AbstractDraw(Origin, Destination);
@@ -321,6 +405,7 @@ public class DotHandler : MonoBehaviour {
         DotFragment Dotfragment = gameObj.GetComponent<DotFragment>();
         Dotfragment.level = level;
         Dotfragment.Draw();
+        dotHandler.UpdateRecognition();
         return Dotfragment;
     }
 
@@ -330,7 +415,9 @@ public class DotHandler : MonoBehaviour {
         GameObject gameObj = Instantiate(GameHandler.gm.FragmentPrefab, gameObject.transform);
         DotFragment Dotfragment = gameObj.GetComponent<DotFragment>();
         Dotfragment.level = level;
+        Dotfragment.MainDot = this;
         Dotfragment.Draw();
+        UpdateRecognition();
         return Dotfragment;
     }
 
@@ -346,30 +433,42 @@ public class DotHandler : MonoBehaviour {
         //add visual changes
     }
 
-    public void UpdateStrength(int increment)
+    public void UpdateStrength(int increment, Player Attacker = null)
     {
         //handle visual change
-        if (increment > 0)
+        int i = increment;
+        while (increment != 0)
         {
-            for (int i = 0; i < increment; i++)
+            Debug.Log(increment);
+            if (increment > 0)
             {
-                DotFragment fragment = CreateDotFragment(Strength + i + 1);
+                DotFragment fragment = CreateDotFragment(Strength + 1);
                 DotFragments.Add(fragment);
-                fragment.level = Strength + i + 1;
+                fragment.level = Strength + 1;
                 fragment.MainDot = this;
+                i++;
+                increment--;
+                Strength++;
             }
-        }
-        else
-        {
-            for (int i = 0; i > increment; i--)
+            if (increment < 0)
             {
-                Destroy(DotFragments[DotFragments.Count-1].gameObject);
-                DotFragments.RemoveAt(DotFragments.Count - 1);
+                if (DotFragments.Count > -1)
+                {
+                    Destroy(DotFragments[DotFragments.Count - 1].gameObject);
+                    DotFragments.RemoveAt(DotFragments.Count - 1);
+                    increment++;
+                }
+                else
+                {
+                    Owner = Attacker;
+                    increment = -increment;
+                }
+                Strength--;
             }
-        }
-        Strength += increment;
-        text.text = Strength.ToString();
 
+            text.text = Strength.ToString();
+        }
+        Debug.Log("UpdateStrength ended");
     }
     #endregion UtilityMethods
 }

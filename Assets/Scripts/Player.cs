@@ -10,6 +10,7 @@ public class Player : MonoBehaviour {
     [SerializeField]private float ScrollSpeed = 1;
     public bool isTurn = false;
     public bool StartPlayer;
+    public Color playercolor;
     public enum PlayerMode
     {
         Select,
@@ -20,9 +21,14 @@ public class Player : MonoBehaviour {
 
   
 
-    public void Start()
+    public void Awake()
     {
-        GameHandler.CurrPlayerMove = StartPlayer && GameHandler.CurrPlayerMove == null ? this : null;
+        
+        RoundHandler.PlayerList.Enqueue(this);
+        if (StartPlayer)
+        {
+            RoundHandler.NextPlayer();
+        }
     }
 
     public void Update()
