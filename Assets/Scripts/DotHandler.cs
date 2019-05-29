@@ -20,6 +20,7 @@ public class DotHandler : MonoBehaviour {
         public int energyOnSelect;
         public Connection AbsConnection;
         public bool OnDrag = false;
+        public bool SecondSelected= false;
         float counter = 0;
 
 
@@ -49,7 +50,10 @@ public class DotHandler : MonoBehaviour {
             Debug.Log(energyOnSelect + "  //  " + d.level);
             foreach(Connection c in selectdot.Connections)
             {
-                c.cube.gameObject.layer = 9;
+                if (c != null)
+                {
+                    c.cube.gameObject.layer = 9;
+                }
             }
         }
         public void OnUpdate()
@@ -77,7 +81,13 @@ public class DotHandler : MonoBehaviour {
             selectedDotBefore = selectedDot;
             selectedDot = node;
             Debug.Log(selectedDotBefore + " // " + selectedDot);
-            OnDrag = false;
+            SecondSelected = true; //will occasionally not work in certain scenarios
+
+            if (selectedDot.Owner != null && selectedDotBefore.Owner != selectedDot.Owner)
+            {
+                Destroy(AbsConnection.gameObject);
+                AbsConnection = null;
+            }
         }
 
 
@@ -86,8 +96,9 @@ public class DotHandler : MonoBehaviour {
             try
             {
                 
-                if (OnDrag)
+                if (OnDrag && !SecondSelected)
                 {
+                    Debug.Log("past here");
                     foreach(DotHandler d in FindObjectsOfType<DotHandler>())
                     {
                         if (d.OnMouse)
@@ -106,7 +117,7 @@ public class DotHandler : MonoBehaviour {
                         if (RoundHandler.CurrPlayerMove.playerDotHandlers.Contains(selectedDot))
                         {
                             //establish Connection or Move Energy or wants to cancel
-                            if (selectedDot == selectedDotBefore && selectedDotBefore != null)
+                            if (selectedDot == selectedDotBefore)
                             {
                                 CancelBuild(2);
                             }
@@ -195,14 +206,16 @@ public class DotHandler : MonoBehaviour {
                     else
                     {
                         //player wants to attack other dot
-                        Debug.Log(RoundHandler.CurrPlayerMove + " attacks " + selectedDot.Owner);
 
-                        selectedDotBefore.UpdateStrength(-energyOnSelect);
-                        selectedDot.UpdateStrength(-energyOnSelect);
+                        Debug.Log(RoundHandler.CurrPlayerMove + " attacks " + selectedDot.Owner + "  //  " + energyOnSelect);
+                        Debug.Log(selectedDotBefore + "  //  " + selectedDot);
+                        if (selectedDotBefore != selectedDot) //small bug might be appearant where selectedDot = selectedDotBefore
+                        {
+                            selectedDotBefore.AttackDot(selectedDot, energyOnSelect);
+                        }
 
-                        if (AbsConnection != null)
-                            Destroy(AbsConnection.gameObject);
-                        OnBuildEnd();
+                        OnBuildEnd(); 
+                        
                     }
                 }
             }
@@ -224,6 +237,10 @@ public class DotHandler : MonoBehaviour {
 
         public void OnBuildEnd()
         {
+
+            selectedDot.UpdateList();
+            selectedDotBefore.UpdateList();
+
             Debug.Log("Ended Build");
             OnDrag = false;
             foreach (Connection c in selectedDot.Connections)
@@ -245,6 +262,7 @@ public class DotHandler : MonoBehaviour {
     public bool OnMouse = false;
     public bool OnDrag = false;
     public int Strength = 0;
+    public int elevation = 0;
     public GameObject Gfx;
     TextMeshPro text;
     public Player Owner;
@@ -358,6 +376,26 @@ public class DotHandler : MonoBehaviour {
 
     #endregion DrawMethods
     #region UtilityMehtods
+
+    public void UpdateList()
+    {
+        //filters null values out of lists
+        for (int i = 0; i < Connections.Count; i++)
+        {
+            if (Connections[i] == null)
+            {
+                Connections.RemoveAt(i);
+            }
+        }
+        for (int i = 0; i < DotFragments.Count; i++)
+        {
+            if (DotFragments[i] == null)
+            {
+                DotFragments.RemoveAt(i);
+            }
+        }
+    }
+
     public static void EnergyMove(DotHandler from, DotHandler to, int Amount, int evaporation = 0)
     {
         from.UpdateStrength(-Amount);
@@ -422,24 +460,53 @@ public class DotHandler : MonoBehaviour {
     }
 
     
-    public static void AttackDot(DotHandler Origin, DotHandler Destination, int Amount)
+    public void AttackDot(DotHandler Destination, int Amount)
     {
-        //not yet featured
+        if (Amount > 0 && Amount < 20 && Strength > 1)
+        {
+            //if in the right conditions to make an attack
+
+            if (Destination.Strength <= 1)
+            {
+                //takeover attack
+                Destination.OnSwitchPlayer(Owner);
+                CreateConnection(this, Destination);
+                UpdateList();
+                Destination.UpdateList();
+                UpdateStrength(-Amount);
+                Destination.UpdateStrength(Amount - 1);
+                
+
+            }
+            else
+            {
+                Debug.Log("Amount: " + Amount);
+                //normal attack (both nodes damage eachother)
+                UpdateStrength(-1);
+                Destination.UpdateStrength(-1);
+                AttackDot(Destination, Amount - 1);
+            }
+        }
+        
+
     }
 
     public void OnSwitchPlayer(Player p)
     {
+        for (int i = 0; i < Connections.Count; i++)
+        {
+            if (Connections[i] != null)
+                Connections[i].DestroyConnection();
+        }
         Owner = p;
-        //add visual changes
     }
 
-    public void UpdateStrength(int increment, Player Attacker = null)
+    public void UpdateStrength(int increment)
     {
         //handle visual change
         int i = increment;
         while (increment != 0)
         {
-            Debug.Log(increment);
             if (increment > 0)
             {
                 DotFragment fragment = CreateDotFragment(Strength + 1);
@@ -452,7 +519,7 @@ public class DotHandler : MonoBehaviour {
             }
             if (increment < 0)
             {
-                if (DotFragments.Count > -1)
+                if (DotFragments.Count > 0)
                 {
                     Destroy(DotFragments[DotFragments.Count - 1].gameObject);
                     DotFragments.RemoveAt(DotFragments.Count - 1);
@@ -460,15 +527,13 @@ public class DotHandler : MonoBehaviour {
                 }
                 else
                 {
-                    Owner = Attacker;
-                    increment = -increment;
+                    Debug.Log("could not change strength, an error occured");
                 }
                 Strength--;
             }
 
-            text.text = Strength.ToString();
+            text.text = Strength.ToString(); //obsolete, Artifact of another version
         }
-        Debug.Log("UpdateStrength ended");
     }
     #endregion UtilityMethods
 }

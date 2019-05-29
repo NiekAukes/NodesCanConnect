@@ -11,8 +11,9 @@ public class GameHandler : MonoBehaviour {
     {
         public enum TillingMode {None, Hexagonal, Triagonal, Random }
         public TillingMode tillingMode;
-        public int XLength, YLength;
+        public int Range;
         public float Radius;
+        public Vector2 Center;
     }
     public static GameHandler gm;
     public static bool BuildMode = false, OnOver = false;
@@ -21,6 +22,7 @@ public class GameHandler : MonoBehaviour {
     [SerializeField]private DotHandler tst1, tst2, tst3; //declares Dots in code
     public Transform ConnectionFolder, AnchorFolder, NodeFolder;
     public Tilling tilling;
+    public List<DotHandler> StartPoints = new List<DotHandler>();
 
     #endregion Variables
 
@@ -37,7 +39,7 @@ public class GameHandler : MonoBehaviour {
             CreateConnection(tst1, tst3); //draws connection between tst1 and tst3 (Debug)
         }
         if (tilling.tillingMode == Tilling.TillingMode.Hexagonal)
-            HexagonalTilling(tilling.XLength, Mathf.FloorToInt(tilling.YLength/2) + 1, tilling.Radius);
+            HexagonalTilling(tilling.Range, tilling.Radius, tilling.Center);
     }
 	
 	// Update is called once per frame
@@ -59,11 +61,10 @@ public class GameHandler : MonoBehaviour {
     #endregion RuntimeHandlers
 
     #region StaticMethods
-    public static DotHandler CreateAnchor(Vector2 Position) ///Creates Anchor on Position Parameter
+    public static DotHandler CreateNode(Vector2 Position) ///Creates Anchor on Position Parameter
     {
-        GameObject gm_Anchor = Instantiate(gm.AnchorPrefab, Position, Quaternion.Euler(0f, 0f, 0f), gm.AnchorFolder);
-        DotHandler anchor = gm_Anchor.GetComponent<DotHandler>();
-        return anchor;
+        GameObject objectTemp = Instantiate(gm.NodePrefab, Position, new Quaternion(0, 0, 0, 0), gm.NodeFolder);
+        return objectTemp.GetComponent<DotHandler>();
     }
 
 
@@ -166,12 +167,12 @@ public class GameHandler : MonoBehaviour {
     #region Tilling
 
 
-    public static DotHandler[] HexagonalTilling(int rangeX, int rangeY, float radius) ///Hexagonal Tilling
+    public static DotHandler[] HexagonalTilling(int rangeX, int rangeY, float radius, Vector2 offset) ///Hexagonal Tilling
     {
 
         List<Vector2> seen = new List<Vector2>();
         List<DotHandler> anchors = new List<DotHandler>();
-        Vector2 center = new Vector2(0f, 0f);
+        Vector2 center = offset;
         int posX = 0;
         int posY = 0;
         int timesrun = 0;
@@ -188,7 +189,7 @@ public class GameHandler : MonoBehaviour {
                 if (!seen.Contains(p))
                 {
                     seen.Add(p);
-                    DotHandler anchor = CreateAnchor(p);
+                    DotHandler anchor = CreateNode(p);
                     anchor.name = "Hex(" + posX + ", " + posY + ")[" + i + "]";
                     anchors.Add(anchor);
 
@@ -212,33 +213,38 @@ public class GameHandler : MonoBehaviour {
         return anchors.ToArray();
     }
 
-    public static DotHandler[] HexagonalTilling(int range, float radius) ///Hexagonal Tilling
+    public static DotHandler[] HexagonalTilling(int range, float radius, Vector2 offset) ///Hexagonal Tilling
     {
         int currRange = 0;
         List<Vector2> seen = new List<Vector2>();
         List<DotHandler> anchors = new List<DotHandler>();
-        Vector2 center = new Vector2(0f, 0f);
+        Vector2 center = offset;
         Vector2 currCenter = center;
-        float deltaX = Mathf.Cos(60 * Mathf.Deg2Rad) * radius, deltaY = radius + radius * Mathf.Sin(60);
+        float deltaX = Mathf.Sin(60 * Mathf.Deg2Rad) * radius, deltaY = radius * 1.5f;
 
         while (currRange != range)
         {
             int hexag;
-            Vector2 P_vPos = new Vector2(center.x + radius * currRange * Mathf.Sqrt(3f), 0);
-            Vector2 P_vNeg = new Vector2(center.x - radius * currRange * Mathf.Sqrt(3f), 0);
+            Vector2 P_vPos = new Vector2(center.x + deltaX * 2 * (currRange + 1), center.y);
+            Vector2 P_vNeg = new Vector2(center.x - deltaX * 2 * (currRange + 1), center.y);
             Vector2 N_vPos = P_vPos, N_vNeg = P_vNeg;
+
+            Debug.Log(P_vPos + "  //  " + P_vNeg);
 
             hexag = 0;
             while (hexag != range)
             {
-                
+                Vector2 P_vPos_org = P_vPos;
+                Vector2 P_vNeg_org = P_vNeg;
+
                 P_vPos = new Vector2(P_vPos.x - deltaX, P_vPos.y + deltaY);
-                P_vNeg = new Vector2(P_vNeg.x - deltaX, P_vNeg.y - deltaY);
-                N_vPos = new Vector2(N_vPos.x + deltaX, P_vPos.y + deltaY);
-                N_vNeg = new Vector2(N_vNeg.x + deltaX, P_vNeg.y - deltaY);
-                Vector2[] t = new Vector2[] {P_vPos, P_vNeg, N_vPos, N_vNeg};
-                for (int j = 0; j < 4; j++)
+                P_vNeg = new Vector2(P_vNeg.x + deltaX, P_vNeg.y + deltaY);
+                N_vPos = new Vector2(N_vPos.x - deltaX, N_vPos.y - deltaY);
+                N_vNeg = new Vector2(N_vNeg.x + deltaX, N_vNeg.y - deltaY);
+                Vector2[] t = new Vector2[] {P_vPos_org, P_vNeg_org, P_vPos, P_vNeg, N_vPos, N_vNeg};
+                for (int j = 0; j < 6; j++)
                 {
+                    Debug.Log(t[j]);
                     currCenter = t[j];
                     for (int i = 0; i < 6; i++)
                     {
@@ -249,8 +255,11 @@ public class GameHandler : MonoBehaviour {
                         if (!seen.Contains(p))
                         {
                             seen.Add(p);
-                            DotHandler anchor = CreateAnchor(p);
-                            anchor.name = "Hex(" + currRange + ")[" + hexag + "][" + i + "]";
+                            DotHandler anchor = CreateNode(p);
+                            anchor.name = "Hex(" + currRange + ")[" + j + "][" + i + "]";
+                            anchor.elevation = range - currRange;
+                            if (anchor.elevation == 1)
+                                gm.StartPoints.Add(anchor);
                             anchors.Add(anchor);
 
                         }

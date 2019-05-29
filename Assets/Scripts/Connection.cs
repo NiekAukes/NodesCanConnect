@@ -43,7 +43,6 @@ public class Connection : MonoBehaviour {
                     if (retrievedcollider != null && retrievedcollider.gameObject.transform.parent != transform.parent)
                     {
                         cannotBuild = true;
-                        Debug.Log(retrievedcollider.gameObject.transform.parent + "  //  " + (retrievedcollider.gameObject.transform.parent != transform.parent));
                     }
 
                 }
@@ -59,7 +58,7 @@ public class Connection : MonoBehaviour {
             cannotBuild = false;
             Debug.Log("not touching");
         }
-        if (DotHandler.clickRegist != null)
+        if (DotHandler.clickRegist != null && DotHandler.clickRegist.AbsConnection != null)
         {
             if (cannotBuild )
             {
@@ -145,9 +144,9 @@ public class Connection : MonoBehaviour {
         return ConnectTemp;
     }
 
-    private void OnDestroy()
+    public void DestroyConnection()
     {
-        
+        Destroy(gameObject);
     }
 
 
