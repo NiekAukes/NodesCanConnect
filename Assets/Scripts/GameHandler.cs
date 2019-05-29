@@ -16,6 +16,8 @@ public class GameHandler : MonoBehaviour {
         public Vector2 Center;
     }
     public static GameHandler gm;
+    public static RoundHandler rm;
+    public static Casual casm;
     public static bool BuildMode = false, OnOver = false;
     public static DotHandler CurrDot;
     public GameObject ConnectionPrefab, NodePrefab, AnchorPrefab, FragmentPrefab; //AnchorPrefab
@@ -30,7 +32,9 @@ public class GameHandler : MonoBehaviour {
     // Use this for initialization
     void Start () {
         gm = this;
-        Application.targetFrameRate = 300;
+        rm = FindObjectOfType<RoundHandler>();
+        casm = FindObjectOfType<Casual>();
+        Application.targetFrameRate = 1000;
         QualitySettings.vSyncCount = 0;
         if (!(tst1 == null) && !(tst2 == null) && !(tst3 == null))
         {
