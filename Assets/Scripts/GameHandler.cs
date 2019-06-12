@@ -20,7 +20,7 @@ public class GameHandler : MonoBehaviour {
     public static Casual casm;
     public static bool BuildMode = false, OnOver = false;
     public static DotHandler CurrDot;
-    public GameObject ConnectionPrefab, NodePrefab, AnchorPrefab, FragmentPrefab; //AnchorPrefab
+    public GameObject ConnectionPrefab, NodePrefab, FragmentPrefab; //AnchorPrefab
     [SerializeField]private DotHandler tst1, tst2, tst3; //declares Dots in code
     public Transform ConnectionFolder, AnchorFolder, NodeFolder;
     public Tilling tilling;
@@ -36,14 +36,11 @@ public class GameHandler : MonoBehaviour {
         casm = FindObjectOfType<Casual>();
         Application.targetFrameRate = 1000;
         QualitySettings.vSyncCount = 0;
-        if (!(tst1 == null) && !(tst2 == null) && !(tst3 == null))
-        {
-            CreateConnection(tst1, tst2); //draws connection between tst1 and tst2 (Debug)
-            CreateConnection(tst2, tst3); //draws connection between tst2 and tst3 (Debug)
-            CreateConnection(tst1, tst3); //draws connection between tst1 and tst3 (Debug)
-        }
         if (tilling.tillingMode == Tilling.TillingMode.Hexagonal)
             HexagonalTilling(tilling.Range, tilling.Radius, tilling.Center);
+
+        casm.InitializePlayers();
+        RoundHandler.StartGame();
     }
 	
 	// Update is called once per frame
@@ -57,6 +54,10 @@ public class GameHandler : MonoBehaviour {
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            /*using (System.IO.StreamWriter logfile = new System.IO.StreamWriter(@"C:\Logs\NCC\LogFile" + System.DateTime.Today.ToString()))
+            {
+                logfile.Write
+            } */
             Application.Quit();
         }
         
@@ -150,7 +151,7 @@ public class GameHandler : MonoBehaviour {
     }
     public static GameObject GetAnchorPrefab()
     {
-        return gm.AnchorPrefab;
+        return gm.NodePrefab;
     }
     public static Transform GetConnectionFolder()
     {
@@ -233,8 +234,6 @@ public class GameHandler : MonoBehaviour {
             Vector2 P_vNeg = new Vector2(center.x - deltaX * 2 * (currRange + 1), center.y);
             Vector2 N_vPos = P_vPos, N_vNeg = P_vNeg;
 
-            Debug.Log(P_vPos + "  //  " + P_vNeg);
-
             hexag = 0;
             while (hexag != range)
             {
@@ -248,7 +247,6 @@ public class GameHandler : MonoBehaviour {
                 Vector2[] t = new Vector2[] {P_vPos_org, P_vNeg_org, P_vPos, P_vNeg, N_vPos, N_vNeg};
                 for (int j = 0; j < 6; j++)
                 {
-                    Debug.Log(t[j]);
                     currCenter = t[j];
                     for (int i = 0; i < 6; i++)
                     {
@@ -277,7 +275,6 @@ public class GameHandler : MonoBehaviour {
 
 
 
-            
         return null;
     }
     

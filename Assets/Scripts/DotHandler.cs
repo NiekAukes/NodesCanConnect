@@ -26,8 +26,6 @@ public class DotHandler : MonoBehaviour {
 
         public ClickRegist(DotHandler selectdot, DotFragment d = null)
         {
-            Debug.Log(selectdot.Owner);
-            Debug.Log(RoundHandler.CurrPlayerMove);
             if (selectdot.Owner != RoundHandler.CurrPlayerMove)
             {
                 CancelBuild(6);
@@ -81,7 +79,7 @@ public class DotHandler : MonoBehaviour {
             selectedDotBefore = selectedDot;
             selectedDot = node;
             Debug.Log(selectedDotBefore + " // " + selectedDot);
-            SecondSelected = true; //will occasionally not work in certain scenarios
+            SecondSelected = true;
 
             if (selectedDot.Owner != null && selectedDotBefore.Owner != selectedDot.Owner)
             {
@@ -170,6 +168,7 @@ public class DotHandler : MonoBehaviour {
                                     }
                                     else
                                     {
+                                        //Move Energy over multiple nodes
                                         CancelBuild(5);
                                     }
                                 }
@@ -531,8 +530,6 @@ public class DotHandler : MonoBehaviour {
                 }
                 Strength--;
             }
-
-            text.text = Strength.ToString(); //obsolete, Artifact of another version
         }
     }
     #endregion UtilityMethods
