@@ -3,12 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour {
+public abstract class IPlayer : MonoBehaviour
+{
     public Camera cam;
-    public List<DotHandler> playerDotHandlers = new List<DotHandler>();
-    [SerializeField]private float MovementSpeed = 1;
-    private float speed = 1;
-    [SerializeField]private float ScrollSpeed = 1;
     public bool isTurn = false;
     public bool StartPlayer;
     public Color playercolor;
@@ -18,6 +15,14 @@ public class Player : MonoBehaviour {
         Build
     }
     public PlayerMode playerMode;
+
+    public List<DotHandler> playerDotHandlers = new List<DotHandler>();
+}
+
+public class Player : IPlayer {
+    [SerializeField]private float MovementSpeed = 1;
+    private float speed = 1;
+    [SerializeField]private float ScrollSpeed = 1;
 
 
     public void Update()

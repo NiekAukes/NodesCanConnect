@@ -15,9 +15,16 @@ public class GameHandler : MonoBehaviour {
         public float Radius;
         public Vector2 Center;
     }
+    public enum GameMode
+    {
+        Casual,
+        Competitive,
+        Tutorial
+    }
     public static GameHandler gm;
     public static RoundHandler rm;
     public static Casual casm;
+    public static Tutorial Tutm;
     public static bool BuildMode = false, OnOver = false;
     public static DotHandler CurrDot;
     public GameObject ConnectionPrefab, NodePrefab, FragmentPrefab; //AnchorPrefab
@@ -25,6 +32,7 @@ public class GameHandler : MonoBehaviour {
     public Transform ConnectionFolder, AnchorFolder, NodeFolder;
     public Tilling tilling;
     public List<DotHandler> StartPoints = new List<DotHandler>();
+    public GameMode gamemode;
 
     #endregion Variables
 
@@ -34,12 +42,15 @@ public class GameHandler : MonoBehaviour {
         gm = this;
         rm = FindObjectOfType<RoundHandler>();
         casm = FindObjectOfType<Casual>();
+        Tutm = FindObjectOfType<Tutorial>();
         Application.targetFrameRate = 1000;
         QualitySettings.vSyncCount = 0;
         if (tilling.tillingMode == Tilling.TillingMode.Hexagonal)
             HexagonalTilling(tilling.Range, tilling.Radius, tilling.Center);
-
-        casm.InitializePlayers();
+        if (gamemode == GameMode.Casual)
+            casm.InitializePlayers();
+        if (gamemode == GameMode.Tutorial)
+            Tutm.InitializePlayers();
         RoundHandler.StartGame();
     }
 	
@@ -127,7 +138,7 @@ public class GameHandler : MonoBehaviour {
         return BuildMode;
 
     }
-    public static Player GetCurrPlayer(Player p = null)
+    public static IPlayer GetCurrPlayer(Player p = null)
     {
         if (p != null)
         {
@@ -137,7 +148,7 @@ public class GameHandler : MonoBehaviour {
             return RoundHandler.CurrPlayerMove;
         return null;
     }
-    public static Player[] GetPlayerList()
+    public static IPlayer[] GetPlayerList()
     {
         return RoundHandler.PlayerList.ToArray();
     }

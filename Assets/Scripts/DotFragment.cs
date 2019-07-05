@@ -22,7 +22,12 @@ public class DotFragment : MonoBehaviour
         gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, 0.1f * level);
         Frame.sortingOrder = Outline.sortingOrder + 1;
         //scaling
-        Frame.color = MainDot.Owner.playercolor;
+        if (MainDot.Owner != null)
+        {
+            Frame.color = MainDot.Owner.playercolor;
+
+        }
+        
         //more drawing
     }
 

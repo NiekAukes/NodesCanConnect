@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Networking;
 
 public class Connection : MonoBehaviour {
     public DotHandler origin, destination; // declares DotHandler vars
@@ -12,6 +11,7 @@ public class Connection : MonoBehaviour {
     public ContactFilter2D t;
     static LayerMask mask;
     static DotHandler hoverdot;
+    public bool Abs = false;
     public bool cannotBuild = false;
 
     private void Awake()
@@ -21,23 +21,56 @@ public class Connection : MonoBehaviour {
     }
     private void Update()
     {
+        
         bool flag_onmouse = false;
-        foreach (Player p in RoundHandler.PlayerList)
+        foreach (IPlayer p in RoundHandler.PlayerList)
         {
             foreach (DotHandler d in p.playerDotHandlers)
             {
                 if (d.OnMouse)
                 {
-                    hoverdot = d;
+                    if (hoverdot != d)
+                    {
+                        foreach (Connection c in hoverdot.Connections)
+                        {
+                            c.cube.gameObject.layer = 8;
+                        }
+                    }
+                    if (!Abs)
+                    {
+                        
+                        foreach (Connection c in origin.Connections)
+                        {
+                            c.cube.gameObject.layer = 8;
+                        }
+                        foreach (Connection c in destination.Connections)
+                        {
+                            c.cube.gameObject.layer = 8;
+                        }
+                        hoverdot = null;
+                    }
                     flag_onmouse = true;
+
                 }
             }
         }
-        if (flag_onmouse)
+        if (flag_onmouse && !Abs)
         {
+
             foreach (Connection c in hoverdot.Connections)
             {
                 c.cube.gameObject.layer = 9;
+                Debug.Log("Hoverdot: " + hoverdot);
+            }
+            foreach (Connection c in origin.Connections)
+            {
+                c.cube.gameObject.layer = 9;
+                Debug.Log("connection disabled: " + c);
+            }
+            foreach (Connection c in destination.Connections)
+            {
+                c.cube.gameObject.layer = 9;
+                Debug.Log("connection disabled: " + c);
             }
         }
         if (collider.IsTouching(t))
@@ -50,6 +83,7 @@ public class Connection : MonoBehaviour {
                 if (retrievedcollider != null && retrievedcollider.gameObject.transform.parent != transform.parent)
                 {
                     cannotBuild = true;
+                    Debug.Log(contacts[0].transform.parent.gameObject.name);
                 }
 
             }
@@ -60,7 +94,7 @@ public class Connection : MonoBehaviour {
         }
         if (DotHandler.clickRegist != null && DotHandler.clickRegist.AbsConnection != null)
         {
-            if (cannotBuild )
+            if (cannotBuild)
             {
                 DotHandler.clickRegist.AbsConnection.cube.GetComponent<SpriteRenderer>().color = Color.red;
             }
@@ -69,17 +103,8 @@ public class Connection : MonoBehaviour {
                 DotHandler.clickRegist.AbsConnection.cube.GetComponent<SpriteRenderer>().color = RoundHandler.CurrPlayerMove.playercolor;
             }
         }
-        if (hoverdot != null)
-        {
-            foreach (Connection c in hoverdot.Connections)
-            {
-                c.cube.gameObject.layer = 8;
-            }
-            hoverdot = null;
-        }
+        
     }
-
-
 
     public Connection DrawConnection() //draws new connection for the current connection
     {
@@ -123,6 +148,7 @@ public class Connection : MonoBehaviour {
         rotationZ = 90 - Mathf.Atan(tst) * Mathf.Rad2Deg;
         cube.localScale = new Vector3(0.03f, length / 5.75f, 0.1f);
         cube.rotation = Quaternion.Euler(0, 0, rotationZ);
+        Abs = true;
         return this;
     }
 
@@ -149,6 +175,7 @@ public class Connection : MonoBehaviour {
         cube.gameObject.layer = 8;
         GetComponentInChildren<SpriteRenderer>().color = Origin.Owner.playercolor;
         Debug.Log("updated color");
+        Abs = false;
         return ConnectTemp;
     }
 

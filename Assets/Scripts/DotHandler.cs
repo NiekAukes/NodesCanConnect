@@ -34,6 +34,7 @@ public class DotHandler : MonoBehaviour {
 
             selectedDot = selectdot;
 
+
             if (d == null)
                 energyOnSelect = selectedDot.Strength;
             else
@@ -56,11 +57,13 @@ public class DotHandler : MonoBehaviour {
         }
         public void OnUpdate()
         {
-
-            if (!(selectedDot.transform.position.y > selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition).y))
-                AbsConnection.AbstractDraw(selectedDot.transform.position, selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition));
-            else
-                AbsConnection.AbstractDraw(selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition), selectedDot.transform.position);
+            if (selectedDot.Owner.GetType() == typeof(Player))
+            {
+                if (!(selectedDot.transform.position.y > selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition).y))
+                    AbsConnection.AbstractDraw(selectedDot.transform.position, selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition));
+                else
+                    AbsConnection.AbstractDraw(selectedDot.Owner.cam.ScreenToWorldPoint(Input.mousePosition), selectedDot.transform.position);
+            }
 
 
             //counter for dragging
@@ -264,7 +267,7 @@ public class DotHandler : MonoBehaviour {
     public int elevation = 0;
     public GameObject Gfx;
     TextMeshPro text;
-    public Player Owner;
+    public IPlayer Owner;
     public List<Connection> Connections = new List<Connection>();
     public List<DotFragment> DotFragments = new List<DotFragment>();
     Color color;
@@ -458,6 +461,22 @@ public class DotHandler : MonoBehaviour {
         return Dotfragment;
     }
 
+    public DotHandler[] GetNearbyDotHandlers()
+    {
+        DotHandler[] dotHandlers = new DotHandler[30];
+        Collider2D[] temp = Physics2D.OverlapCircleAll(transform.position, GameHandler.gm.tilling.Radius * 3f);
+
+        int failedTimes = 0;
+        for(int i = 0; i < temp.Length; i++)
+        {
+            DotHandler checkD = temp[i].gameObject.GetComponent<DotHandler>();
+            if (checkD == null)
+                failedTimes++;
+            else
+                dotHandlers[i - failedTimes] = checkD;
+        }
+        return dotHandlers;
+    }
     
     public void AttackDot(DotHandler Destination, int Amount)
     {
@@ -490,7 +509,7 @@ public class DotHandler : MonoBehaviour {
 
     }
 
-    public void OnSwitchPlayer(Player p)
+    public void OnSwitchPlayer(IPlayer p)
     {
         for (int i = 0; i < Connections.Count; i++)
         {

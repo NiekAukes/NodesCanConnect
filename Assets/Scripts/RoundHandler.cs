@@ -4,15 +4,16 @@ using UnityEngine;
 
 public class RoundHandler : MonoBehaviour
 {
-    public static Player CurrPlayerMove;
-    public static Queue<Player> PlayerList = new Queue<Player>();
+    public static IPlayer CurrPlayerMove;
+    public static Queue<IPlayer> PlayerList = new Queue<IPlayer>();
 
 
-    public static Player StartGame()
+    public static IPlayer StartGame()
     {
         bool Failed = false;
         if (!Failed)
         {
+            //sets currplayermove and assigns first turn
             CurrPlayerMove = PlayerList.ToArray()[0];
             CurrPlayerMove.cam.enabled = true;
             Debug.Log("Next round // " + CurrPlayerMove);
@@ -25,15 +26,17 @@ public class RoundHandler : MonoBehaviour
             return null;
         }
     }
-    public static Player NextPlayer()
+    public static IPlayer NextPlayer()
     {
         bool Failed = false;
         if (!Failed)
         {
+            //dequeues and enqueues the player 
             CurrPlayerMove = PlayerList.Dequeue();
             PlayerList.Enqueue(CurrPlayerMove);
             CurrPlayerMove.cam.enabled = false;
 
+            //assigns new player turn
             CurrPlayerMove = PlayerList.ToArray()[0];
             CurrPlayerMove.cam.enabled = true;
             Debug.Log("Next round // " + CurrPlayerMove);
@@ -48,6 +51,7 @@ public class RoundHandler : MonoBehaviour
     }
     private void Update()
     {
+        //end turn by pressing button
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             Debug.Log("ctrl");
