@@ -40,6 +40,11 @@ public class RoundHandler : MonoBehaviour
             CurrPlayerMove = PlayerList.ToArray()[0];
             CurrPlayerMove.cam.enabled = true;
             Debug.Log("Next round // " + CurrPlayerMove);
+
+            if (CurrPlayerMove.GetType() == typeof(AiCasPlayer))
+            {
+                (CurrPlayerMove as AiCasPlayer).decide();
+            }
             return CurrPlayerMove;
 
         }
@@ -49,6 +54,12 @@ public class RoundHandler : MonoBehaviour
             return null;
         }
     }
+
+    public static void EnterEnergySetState()
+    {
+
+    }
+
     private void Update()
     {
         //end turn by pressing button

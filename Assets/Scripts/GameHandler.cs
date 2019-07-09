@@ -60,7 +60,8 @@ public class GameHandler : MonoBehaviour {
         {
             foreach(DotHandler d in RoundHandler.CurrPlayerMove.playerDotHandlers)
             {
-                d.UpdateStrength(1);
+                if (d != null)
+                    d.UpdateStrength(1);
             }
         }
         if (Input.GetKeyDown(KeyCode.Escape))

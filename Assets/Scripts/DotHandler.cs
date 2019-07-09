@@ -124,23 +124,7 @@ public class DotHandler : MonoBehaviour {
                             }
                             else
                             {
-                                //Establish connection or Move Energy
-                                bool flag_connectionExist = false;
-                                foreach (Connection c in FindObjectsOfType<Connection>())
-                                {
-                                    if (c != AbsConnection)
-                                    {
-
-                                        if ((c.origin == selectedDot && c.destination == selectedDotBefore) || (c.origin == selectedDotBefore && c.destination == selectedDot) && (c.destination != null && c.origin != null))
-                                        {
-                                            flag_connectionExist = true;
-                                            Debug.Log("flag exists");
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                if (flag_connectionExist)
+                                if (Connection.FindConnectionBetween(selectedDot, selectedDotBefore) != null)
                                 {
                                     if (energyOnSelect < selectedDotBefore.Strength)
                                     {
@@ -461,10 +445,10 @@ public class DotHandler : MonoBehaviour {
         return Dotfragment;
     }
 
-    public DotHandler[] GetNearbyDotHandlers()
+    public DotHandler[] GetNearbyDotHandlers(float Multiplier)
     {
         DotHandler[] dotHandlers = new DotHandler[30];
-        Collider2D[] temp = Physics2D.OverlapCircleAll(transform.position, GameHandler.gm.tilling.Radius * 3f);
+        Collider2D[] temp = Physics2D.OverlapCircleAll(transform.position, GameHandler.gm.tilling.Radius * Multiplier);
 
         int failedTimes = 0;
         for(int i = 0; i < temp.Length; i++)
@@ -517,6 +501,8 @@ public class DotHandler : MonoBehaviour {
                 Connections[i].DestroyConnection();
         }
         Owner = p;
+        if (p.GetType() == typeof(AiCasPlayer))
+            p.playerDotHandlers.Add(this);
     }
 
     public void UpdateStrength(int increment)

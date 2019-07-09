@@ -27,30 +27,33 @@ public class Connection : MonoBehaviour {
         {
             foreach (DotHandler d in p.playerDotHandlers)
             {
-                if (d.OnMouse)
+                if (d != null && hoverdot != null)
                 {
-                    if (hoverdot != d)
+                    if (d.OnMouse)
                     {
-                        foreach (Connection c in hoverdot.Connections)
+                        if (hoverdot != d)
                         {
-                            c.cube.gameObject.layer = 8;
+                            foreach (Connection c in hoverdot.Connections)
+                            {
+                                c.cube.gameObject.layer = 8;
+                            }
                         }
-                    }
-                    if (!Abs)
-                    {
-                        
-                        foreach (Connection c in origin.Connections)
+                        if (!Abs)
                         {
-                            c.cube.gameObject.layer = 8;
-                        }
-                        foreach (Connection c in destination.Connections)
-                        {
-                            c.cube.gameObject.layer = 8;
-                        }
-                        hoverdot = null;
-                    }
-                    flag_onmouse = true;
 
+                            foreach (Connection c in origin.Connections)
+                            {
+                                c.cube.gameObject.layer = 8;
+                            }
+                            foreach (Connection c in destination.Connections)
+                            {
+                                c.cube.gameObject.layer = 8;
+                            }
+                            hoverdot = null;
+                        }
+                        flag_onmouse = true;
+
+                    }
                 }
             }
         }
@@ -177,6 +180,23 @@ public class Connection : MonoBehaviour {
         Debug.Log("updated color");
         Abs = false;
         return ConnectTemp;
+    }
+
+    public static Connection FindConnectionBetween(DotHandler Origin, DotHandler Destination)
+    {
+        foreach (Connection c in FindObjectsOfType<Connection>())
+        {
+            if (c != DotHandler.clickRegist.AbsConnection)
+            {
+
+                if ((c.origin == Origin && c.destination == Destination) || (c.origin == Destination && c.destination == Origin) && (c.destination != null && c.origin != null))
+                {
+                    return c;
+                }
+                
+            }
+        }
+        return null;
     }
 
     public void DestroyConnection()

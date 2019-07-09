@@ -20,6 +20,7 @@ public abstract class IPlayer : MonoBehaviour
 }
 
 public class Player : IPlayer {
+    //serialize movement and scroll speed
     [SerializeField]private float MovementSpeed = 1;
     private float speed = 1;
     [SerializeField]private float ScrollSpeed = 1;
@@ -27,9 +28,10 @@ public class Player : IPlayer {
 
     public void Update()
     {
+        //movement calculations
         speed = MovementSpeed * Time.deltaTime;
         isTurn = GameHandler.GetCurrPlayer() == this;
-        if (GetType() != typeof(AiPlayer) && isTurn)
+        if (GetType() == typeof(Player) && isTurn)
         {
             float axisH = Input.GetAxis("Horizontal");
             float axisV = Input.GetAxis("Vertical");
