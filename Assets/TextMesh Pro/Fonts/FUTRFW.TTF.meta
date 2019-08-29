@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 5efebbf1f73e9944ea2073fd81a53b38
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Futurist Fixed-width
+  fontNames:
+  - Futurist Fixed-width
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 048dcfe6b10d1c4408d30882f6f3701f, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
