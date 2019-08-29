@@ -50,8 +50,7 @@ MonoBehaviour:
   StartPlayer: 1
   playercolor: {r: 1, g: 0.7322525, b: 0, a: 1}
   playerMode: 0
-  playerDotHandlers:
-  - {fileID: 0}
+  playerDotHandlers: []
   MovementSpeed: 50
   ScrollSpeed: 1
 --- !u!20 &20255079328275810

@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class Tutorial : MonoBehaviour
 {
+    /*
+     Game Tutorial:
+        -Introduction
+        -Movements
+        -Nodes
+        -EnergyLevels
+        -TakeOvers
+     */
     public GameObject PlayerPreset;
     public GameObject AiPreset;
     public void InitializePlayers()

@@ -11,10 +11,10 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Casual scene.unity
     guid: f57950dc518775f4fa3c0b99beb1b627
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/AiAcademy.unity
     guid: 310f4201659870b4b90fea659eada429
   m_configObjects: {}

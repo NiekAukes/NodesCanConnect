@@ -4,7 +4,8 @@ public class Connection : MonoBehaviour {
     public DotHandler origin, destination; // declares DotHandler vars
     public Transform cube; //declares transform
     public Collider2D collider;
-    
+    public Collider2D[] contacts = new Collider2D[10];
+
 
     public float length, rotationZ, tst, DeltaX, DeltaY; //declares float vars
 
@@ -13,100 +14,160 @@ public class Connection : MonoBehaviour {
     static DotHandler hoverdot;
     public bool Abs = false;
     public bool cannotBuild = false;
+    float counter;
 
     private void Awake()
     {
         mask = LayerMask.GetMask("Connection");
         collider = GetComponentInChildren<Collider2D>();
-    }
-    private void Update()
-    {
         
+    }
+    private void LateUpdate()
+    {
         bool flag_onmouse = false;
-        foreach (IPlayer p in RoundHandler.PlayerList)
-        {
-            foreach (DotHandler d in p.playerDotHandlers)
+        DotHandler Newhoverdot = null;
+        //if (!Abs)
+        //{
+            Newhoverdot = null;
+            //searches for the dot a player is hovering over
+            foreach (IPlayer p in RoundHandler.PlayerList)
             {
-                if (d != null && hoverdot != null)
+                foreach (DotHandler d in p.playerDotHandlers)
                 {
-                    if (d.OnMouse)
+                    if (d != null)
                     {
-                        if (hoverdot != d)
+                        if (d.OnMouse)
                         {
-                            foreach (Connection c in hoverdot.Connections)
-                            {
-                                c.cube.gameObject.layer = 8;
-                            }
+                            Newhoverdot = d;
                         }
-                        if (!Abs)
+                    }
+
+                    /*Debug.Log("tst");
+                    if (d != null && hoverdot == null)
+                    {
+
+                        if (d.OnMouse)
                         {
+                            hoverdot = d;
+                            if (hoverdot == d)
+                            {
 
-                            foreach (Connection c in origin.Connections)
-                            {
-                                c.cube.gameObject.layer = 8;
+                                foreach (Connection c in hoverdot.Connections)
+                                {
+                                    c.cube.gameObject.layer = 8;
+                                }
                             }
-                            foreach (Connection c in destination.Connections)
+                            if (!Abs)
                             {
-                                c.cube.gameObject.layer = 8;
+
+                                foreach (Connection c in origin.Connections)
+                                {
+                                    c.cube.gameObject.layer = 8;
+                                }
+                                foreach (Connection c in destination.Connections)
+                                {
+                                    c.cube.gameObject.layer = 8;
+                                }
+                                hoverdot = null;
                             }
-                            hoverdot = null;
+                            flag_onmouse = true;
+                            Debug.Log("onmouse: " + flag_onmouse);
                         }
-                        flag_onmouse = true;
+                    } */
+                }
+                //searches for changes in hoverdot with Newhoverdot. if so, it restores the layers of the old hoverdot
+                if (Newhoverdot != null && hoverdot != null)
+                {
+                    foreach (Connection c in hoverdot.Connections)
+                    {
+                        c.gameObject.layer = 8;
+                    }
+                }
 
+                //changes layer of the connections of the hoverdot
+                if (hoverdot != null)
+                {
+                    foreach (Connection c in hoverdot.Connections)
+                    {
+                        c.gameObject.layer = 9;
                     }
                 }
             }
-        }
-        if (flag_onmouse && !Abs)
-        {
-
-            foreach (Connection c in hoverdot.Connections)
+            if (DotHandler.clickRegist != null)
             {
-                c.cube.gameObject.layer = 9;
-                Debug.Log("Hoverdot: " + hoverdot);
-            }
-            foreach (Connection c in origin.Connections)
+            if (DotHandler.clickRegist.selectedDot != null)
             {
-                c.cube.gameObject.layer = 9;
-                Debug.Log("connection disabled: " + c);
-            }
-            foreach (Connection c in destination.Connections)
-            {
-                c.cube.gameObject.layer = 9;
-                Debug.Log("connection disabled: " + c);
-            }
-        }
-        if (collider.IsTouching(t))
-        {
-            Collider2D[] contacts = new Collider2D[10];
-            collider.GetContacts(t, contacts);
-            foreach (Collider2D retrievedcollider in contacts)
-            {
-
-                if (retrievedcollider != null && retrievedcollider.gameObject.transform.parent != transform.parent)
+                foreach (Connection c in DotHandler.clickRegist.selectedDot.Connections)
                 {
-                    cannotBuild = true;
-                    Debug.Log(contacts[0].transform.parent.gameObject.name);
+                    c.gameObject.layer = 9;
                 }
+            }
 
             }
-        }
-        else
-        {
-            cannotBuild = false;
-        }
-        if (DotHandler.clickRegist != null && DotHandler.clickRegist.AbsConnection != null)
-        {
-            if (cannotBuild)
+
+            if (hoverdot != null)
             {
-                DotHandler.clickRegist.AbsConnection.cube.GetComponent<SpriteRenderer>().color = Color.red;
+                if (!Abs)
+                {
+
+                    foreach (Connection c in origin.Connections)
+                    {
+                        c.cube.gameObject.layer = 9;
+                    }
+                    foreach (Connection c in destination.Connections)
+                    {
+                        c.cube.gameObject.layer = 9;
+                    }
+                    hoverdot = null;
+                }
             }
-            else
+            if (DotHandler.clickRegist != null)
             {
-                DotHandler.clickRegist.AbsConnection.cube.GetComponent<SpriteRenderer>().color = RoundHandler.CurrPlayerMove.playercolor;
+                if (Abs)
+                {
+                    
+                    Debug.Log(collider.GetContacts(t, contacts));
+                    if (collider.GetContacts(t, contacts) > 0)
+                    {
+                        foreach (Collider2D retrievedcollider in contacts)
+                        {
+                            if (retrievedcollider != null)
+                                Debug.Log("Retrieved Collider: " + retrievedcollider + "  //  " + (retrievedcollider.gameObject.transform != transform));
+                            if (retrievedcollider != null && retrievedcollider.gameObject.transform != transform)
+                            {
+                                cannotBuild = true;
+                                Debug.Log(retrievedcollider.transform.parent.gameObject.name + "  //  cannotbuild: " + cannotBuild);
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        cannotBuild = false;
+                        Debug.Log("Nothing Touchin");
+                    }
+                }
+            //}
+            if (DotHandler.clickRegist != null && DotHandler.clickRegist.AbsConnection != null)
+            {
+                Debug.Log("cannotbuild: " + cannotBuild);
+                if (cannotBuild)
+                {
+                    Debug.Log("cannotbuild: " + cannotBuild);
+                    DotHandler.clickRegist.AbsConnection.cube.GetComponent<SpriteRenderer>().color = Color.red;
+                }
+                else
+                {
+                    counter += Time.deltaTime;
+                }
+                if (counter > 0.2f)
+                {
+                    Debug.Log("cannotbuild: " + cannotBuild);
+                    DotHandler.clickRegist.AbsConnection.cube.GetComponent<SpriteRenderer>().color = RoundHandler.CurrPlayerMove.playercolor;
+                    counter = 0;
+                }
             }
         }
-        
     }
 
     public Connection DrawConnection() //draws new connection for the current connection
@@ -146,7 +207,7 @@ public class Connection : MonoBehaviour {
         tst = Mathf.Abs(Begin.y - End.y) / (Begin.x - End.x);
         DeltaY = Mathf.Abs(Begin.y - End.y);
         DeltaX = Mathf.Abs(Begin.x - End.x);
-        transform.position = new Vector3((DeltaX / 2) + Mathf.Min(Begin.x, End.x), (DeltaY / 2) + Mathf.Min(Begin.y, End.y), 20);
+        transform.position = new Vector3((DeltaX / 2) + Mathf.Min(Begin.x, End.x), (DeltaY / 2) + Mathf.Min(Begin.y, End.y), 0.5f);
 
         rotationZ = 90 - Mathf.Atan(tst) * Mathf.Rad2Deg;
         cube.localScale = new Vector3(0.03f, length / 5.75f, 0.1f);
@@ -186,14 +247,9 @@ public class Connection : MonoBehaviour {
     {
         foreach (Connection c in FindObjectsOfType<Connection>())
         {
-            if (c != DotHandler.clickRegist.AbsConnection)
+            if ((c.origin == Origin && c.destination == Destination) || (c.origin == Destination && c.destination == Origin) && (c.destination != null && c.origin != null))
             {
-
-                if ((c.origin == Origin && c.destination == Destination) || (c.origin == Destination && c.destination == Origin) && (c.destination != null && c.origin != null))
-                {
-                    return c;
-                }
-                
+                return c;
             }
         }
         return null;

@@ -17,7 +17,7 @@ public class AiCasPlayer : IPlayer {
         foreach (DotHandler d in playerDotHandlers.ToArray())
         {
             //check if dot can attack
-            if (Random.Range(0.0f, 1.0f) < decisionfloat)
+            if (Random.Range(0.0f, 1.0f) < decisionfloat && d != null)
             {
                 DotHandler helperDot = null;
                 Debug.Log("decide if do something");
@@ -79,9 +79,12 @@ public class AiCasPlayer : IPlayer {
         }
         foreach (DotHandler d in RoundHandler.CurrPlayerMove.playerDotHandlers)
         {
-            d.UpdateList();
+
             if (d != null)
+            {
+                d.UpdateList();
                 d.UpdateStrength(1);
+            }
         }
         RoundHandler.NextPlayer();
     }
@@ -96,5 +99,6 @@ public class AiCasPlayer : IPlayer {
     void AttackOtherDot(DotHandler subject, DotHandler otherDot)
     {
         subject.AttackDot(otherDot, subject.Strength - 1);
+        RoundHandler.CurrPlayerMove.playerDotHandlers.Add(otherDot);
     }
 }

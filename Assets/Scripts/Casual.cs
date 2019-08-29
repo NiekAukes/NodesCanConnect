@@ -12,10 +12,11 @@ public class Casual : MonoBehaviour
         for (int i = 0; i < players; i++)
         {
             GameObject pgo = Instantiate(PlayerPresets[i]);
-            Player p = pgo.GetComponent<Player>();
+            IPlayer p = pgo.GetComponent<IPlayer>();
             RoundHandler.PlayerList.Enqueue(p);
             int RandNum = (int)(Random.value * GameHandler.gm.StartPoints.Count - 1);
             DotHandler d = GameHandler.gm.StartPoints[RandNum];
+            pgo.transform.position = d.transform.position;
             d.Owner = p;
             d.UpdateStrength(3);
             if (i == 0)

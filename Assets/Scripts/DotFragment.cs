@@ -5,6 +5,7 @@ using UnityEngine;
 public class DotFragment : MonoBehaviour
 {
     public bool OnmouseDown = false;
+    public bool BlueRing = false;
     public DotHandler MainDot;
     public SpriteRenderer Frame;
     public SpriteRenderer Outline;
@@ -21,10 +22,14 @@ public class DotFragment : MonoBehaviour
         Outline.sortingOrder =  10 - level * 2;
         gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, 0.1f * level);
         Frame.sortingOrder = Outline.sortingOrder + 1;
+        Outline.transform.localScale = new Vector3(0.02f / (level * scalelevel + 0.2f) + 1f, 0.02f / (level * scalelevel + 0.2f) + 1f, Outline.transform.localScale.z);
         //scaling
         if (MainDot.Owner != null)
         {
-            Frame.color = MainDot.Owner.playercolor;
+            if (BlueRing)
+                Frame.color = new Color(0, 255, 255, 255);
+            else
+                Frame.color = MainDot.Owner.playercolor;
 
         }
         
@@ -43,17 +48,30 @@ public class DotFragment : MonoBehaviour
     }
     private void OnMouseDown()
     {
-        if (DotHandler.clickRegist == null)
+        if (BlueRing)
         {
-            //first clicked
-            DotHandler.clickRegist = new DotHandler.ClickRegist(MainDot, this);
-            Debug.Log("first clicked");
+            if (RoundHandler.amount > 0)
+            {
+                Debug.Log("amount: " + RoundHandler.amount);
+                MainDot.UpdateStrength(1);
+                RoundHandler.amount--;
+                MainDot.CreateBlueRing();
+            }
         }
         else
         {
-            //second clicked
-            DotHandler.clickRegist.OnRegisterEnter(MainDot);
-            Debug.Log("Second Clicked");
+            if (DotHandler.clickRegist == null)
+            {
+                //first clicked
+                DotHandler.clickRegist = new DotHandler.ClickRegist(MainDot, this);
+                Debug.Log("first clicked");
+            }
+            else
+            {
+                //second clicked
+                DotHandler.clickRegist.OnRegisterEnter(MainDot);
+                Debug.Log("Second Clicked");
+            }
         }
     }
     private void OnMouseUp()

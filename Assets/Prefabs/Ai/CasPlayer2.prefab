@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1803953541837444
+--- !u!1 &2791514873541054563
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,22 +8,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4338866142964732}
-  - component: {fileID: -5577980904762763964}
+  - component: {fileID: 4321002614004495195}
+  - component: {fileID: -7886391076861258092}
   m_Layer: 0
-  m_Name: TutAiPlayer
+  m_Name: CasPlayer2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4338866142964732
+--- !u!4 &4321002614004495195
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1803953541837444}
+  m_GameObject: {fileID: 2791514873541054563}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -31,13 +31,13 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-5577980904762763964
+--- !u!114 &-7886391076861258092
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1803953541837444}
+  m_GameObject: {fileID: 2791514873541054563}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 49ea3d7c9eb02a845b89f8b77a3b9940, type: 3}
@@ -46,7 +46,7 @@ MonoBehaviour:
   cam: {fileID: 0}
   isTurn: 0
   StartPlayer: 0
-  playercolor: {r: 0.40571535, g: 1, b: 0, a: 1}
+  playercolor: {r: 0.67576694, g: 0, b: 1, a: 1}
   playerMode: 0
   playerDotHandlers: []
   decisionfloat: 1.8

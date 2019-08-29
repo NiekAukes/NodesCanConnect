@@ -56,14 +56,14 @@ public class GameHandler : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            foreach(DotHandler d in RoundHandler.CurrPlayerMove.playerDotHandlers)
-            {
-                if (d != null)
-                    d.UpdateStrength(1);
-            }
-        }
+        //if (Input.GetKeyDown(KeyCode.Tab))
+        //{
+        //    foreach(DotHandler d in RoundHandler.CurrPlayerMove.playerDotHandlers)
+        //    {
+        //        if (d != null)
+        //            d.UpdateStrength(1);
+        //    }
+        //}
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             /*using (System.IO.StreamWriter logfile = new System.IO.StreamWriter(@"C:\Logs\NCC\LogFile" + System.DateTime.Today.ToString()))
