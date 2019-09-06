@@ -23,6 +23,9 @@ public class Tutorial : MonoBehaviour
     public GameObject AiPreset;
     public DotHandler playerstart = null;
     int DialogNum = -1;
+    public float UIScale = 1.5f;
+    public List<Dialog> dialogs = new List<Dialog>();
+    public Vector2 DialogPos = new Vector2();
     public void InitializePlayers()
     {
         //spawn Player
@@ -36,7 +39,12 @@ public class Tutorial : MonoBehaviour
         d.UpdateStrength(3);
         p.StartPlayer = true;
         p.isTurn = true;
-
+        foreach(Dialog dial in dialogs)
+        {
+            if (dial != null)
+                dial.transform.localScale *= UIScale;
+        }
+        DialogPos = dialogs[0].transform.position;
 
         //spawn aiPlayer
         pgo = AiPreset;
@@ -52,19 +60,16 @@ public class Tutorial : MonoBehaviour
     public void NextButtonInteraction()
     {
         DialogNum++;
-        switch(DialogNum)
+        if (DialogNum > 0)
         {
-            case 0:
-                break;
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
-            case 4:
-                break;
-
+            DialogPos = dialogs[DialogNum - 1].transform.position;
+            dialogs[DialogNum - 1].HideDialog();
         }
+        dialogs[DialogNum].ShowDialog();
+        dialogs[DialogNum].transform.position = DialogPos;
+    }
+    public void StartPosition()
+    {
+        PlayerPreset.transform.position = playerstart.transform.position;
     }
 }

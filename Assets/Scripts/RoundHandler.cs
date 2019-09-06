@@ -10,6 +10,7 @@ public class RoundHandler : MonoBehaviour
     public static int amount = 0;
 
 
+
     public static IPlayer StartGame()
     {
         bool Failed = false;
@@ -52,7 +53,7 @@ public class RoundHandler : MonoBehaviour
             Debug.Log("Decide: " + CurrPlayerMove.GetType());
             if (CurrPlayerMove.GetType() == typeof(AiCasPlayer))
             {
-                (CurrPlayerMove as AiCasPlayer).decide();
+                (CurrPlayerMove as AiCasPlayer).StartCoroutine("decide");
 
                 Debug.Log("Decide");
             }
@@ -123,5 +124,36 @@ public class RoundHandler : MonoBehaviour
         {
             ExitEnergySetState();
         }
+        
+    }
+    public static bool CheckGold()
+    {
+        Debug.Log("Check?");
+        if (GameHandler.gm.GoldNodes[0].Owner != null)
+        {
+            Debug.Log("fff");
+            IPlayer p = GameHandler.gm.GoldNodes[0].Owner;
+            int count = 0;
+            for (int i = 0; i < 6; i++)
+            {
+                Debug.Log(GameHandler.gm.GoldNodes[i].Owner == p);
+                if (GameHandler.gm.GoldNodes[i].Owner == p)
+                {
+                    count++;
+                    Debug.Log(count);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if (count == 6)
+            {
+                Debug.Log("Quit");
+                Application.Quit();
+                return true;
+            }
+        }
+        return false;
     }
 }

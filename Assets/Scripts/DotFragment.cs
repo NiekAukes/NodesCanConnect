@@ -40,11 +40,18 @@ public class DotFragment : MonoBehaviour
     {
         OnmouseDown = true;
         MainDot.OnMouse = true;
+        if (!RoundHandler.energyDistributionState)
+            Frame.color = new Color(MainDot.Owner.playercolor.r + ((1f - MainDot.Owner.playercolor.r) / 2), MainDot.Owner.playercolor.g + ((1f - MainDot.Owner.playercolor.g) / 2), MainDot.Owner.playercolor.b + (1f - MainDot.Owner.playercolor.b) / 2);
+        
     }
-    private void OnMouseExit()
+        private void OnMouseExit()
     {
         OnmouseDown = false;
         MainDot.OnMouse = false;
+        if (DotHandler.clickRegist == null && !RoundHandler.energyDistributionState)
+        {
+            Frame.color = MainDot.Owner.playercolor;
+        }
     }
     private void OnMouseDown()
     {
@@ -86,5 +93,20 @@ public class DotFragment : MonoBehaviour
     public void OnDestroy()
     {
         //handle Destroy visual change
+    }
+
+    public void SelectColor(bool selectcolor)
+    {
+        if (selectcolor)
+        {
+            Frame.color = new Color(
+            MainDot.Owner.playercolor.r + ((1f - MainDot.Owner.playercolor.r) / 2),
+            MainDot.Owner.playercolor.g + ((1f - MainDot.Owner.playercolor.g) / 2),
+            MainDot.Owner.playercolor.b + ((1f - MainDot.Owner.playercolor.b) / 2));
+        }
+        else
+        {
+            Frame.color = MainDot.Owner.playercolor;
+        }
     }
 }

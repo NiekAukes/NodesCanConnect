@@ -126,7 +126,6 @@ public class Connection : MonoBehaviour {
                 if (Abs)
                 {
                     
-                    Debug.Log(collider.GetContacts(t, contacts));
                     if (collider.GetContacts(t, contacts) > 0)
                     {
                         foreach (Collider2D retrievedcollider in contacts)
@@ -144,16 +143,13 @@ public class Connection : MonoBehaviour {
                     else
                     {
                         cannotBuild = false;
-                        Debug.Log("Nothing Touchin");
                     }
                 }
             //}
             if (DotHandler.clickRegist != null && DotHandler.clickRegist.AbsConnection != null)
             {
-                Debug.Log("cannotbuild: " + cannotBuild);
                 if (cannotBuild)
                 {
-                    Debug.Log("cannotbuild: " + cannotBuild);
                     DotHandler.clickRegist.AbsConnection.cube.GetComponent<SpriteRenderer>().color = Color.red;
                 }
                 else

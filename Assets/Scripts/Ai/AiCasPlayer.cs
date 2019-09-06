@@ -3,19 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-
-
 //Problems with AI:
-//   -Ai will not use HelperDot
+//   -Ai will not use HelperDot **FIXED**
 //   -Ai Needs to search for a helperDot further away
+//   -Ai Needs to create Connections
 public class AiCasPlayer : IPlayer {
     public float decisionfloat = 1.8f;
-
-    public void decide()
+    //public void decide()
+    public IEnumerator decide()
     {
+        List<DotHandler> RerouteDotHandlers = new List<DotHandler>();
         //cycle through all owned dots
         foreach (DotHandler d in playerDotHandlers.ToArray())
         {
+            //underloaded dot
+            
+
+
             //check if dot can attack
             if (Random.Range(0.0f, 1.0f) < decisionfloat && d != null)
             {
@@ -32,24 +36,38 @@ public class AiCasPlayer : IPlayer {
                         {
                             foreach (DotHandler hD in d.GetNearbyDotHandlers(3f))
                             {
-                                helperDot = hD;
-                                //check if this dot meet the requirements to help
-                                if (helperDot != null)
+                                if (helperDot == null && hD != null)
                                 {
-                                    if (!(helperDot.Strength > 1 && helperDot.Owner == this))
+                                    helperDot = hD;
+                                }
+                                //check if this dot meet the requirements to help
+                                if (helperDot != null && hD != null)
+                                {
+                                    helperDot = hD.Strength > helperDot.Strength ? hD : helperDot;
+                                    if (!(helperDot.Strength > 1 && helperDot.Owner == this && Connection.FindConnectionBetween(d, helperDot) != null))
                                     {
-                                        
+
                                         helperDot = null;
                                     }
                                 }
                             }
-                            if (d.Strength > 2 || helperDot != null)
+                            if ((d.Strength > 2 || helperDot != null) && Random.Range(0.0f, 1.0f) < decisionfloat)
                             {
                                 if (helperDot != null)
                                 {
                                     if (Connection.FindConnectionBetween(helperDot, d) != null)
                                     {
                                         DotHandler.EnergyMove(helperDot, d, helperDot.Strength - 1);
+                                    }
+                                    if (otherDothandler.Owner == null)
+                                    {
+                                        //Take over Dot
+                                        TakeOverDot(d, otherDothandler);
+                                    }
+                                    else
+                                    {
+                                        //Attack enemy dot
+                                        AttackOtherDot(d, otherDothandler);
                                     }
                                 }
                                 if (otherDothandler.Strength < d.Strength - 1)
@@ -67,11 +85,62 @@ public class AiCasPlayer : IPlayer {
 
                                 }
                             }
-                            else
-                            {
-                                //request strength from nearby dots
 
+                        }
+                    }
+                }
+            }
+
+
+            bool HostileNearby = false;
+            foreach (DotHandler dotHandler in d.GetNearbyDotHandlers(3f))
+            {
+                if (dotHandler.Owner != this)
+                {
+                    HostileNearby = true;
+                    break;
+                }
+            }
+            if (HostileNearby)
+            {
+                //High Cap needed
+                if (d.Strength < 4)
+                {
+                    // ask Re-enforcements
+                    foreach (DotHandler dotHandler in d.GetNearbyDotHandlers(2f))
+                    {
+                        if (dotHandler.Strength > 4)
+                        {
+                            DotHandler.EnergyMove(dotHandler, d, dotHandler.Strength - 2);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                //Okay to Have less energy
+                if (d.Strength > 3)
+                {
+
+                    //Get Some energy away
+                    foreach (DotHandler dotHandler in d.GetNearbyDotHandlers(2f))
+                    {
+                        if (dotHandler.Strength < 4)
+                        {
+                            if (Connection.FindConnectionBetween(d, dotHandler) == null)
+                            {
+                                Connection c = DotHandler.CreateConnection(d, dotHandler);
+                                c.Abs = true;
+                                if (c.cannotBuild)
+                                {
+                                    c.DestroyConnection();
+                                }
+                                else
+                                {
+                                    DotHandler.EnergyMove(d, dotHandler, 1, 1);
+                                }
                             }
+                            DotHandler.EnergyMove(d, dotHandler, dotHandler.Strength - 2);
                         }
                     }
                 }
@@ -86,7 +155,8 @@ public class AiCasPlayer : IPlayer {
                 d.UpdateStrength(1);
             }
         }
-        RoundHandler.NextPlayer();
+        EndTurn();
+        yield return null;
     }
 
     void TakeOverDot(DotHandler subjectDot, DotHandler otherDothandler)
@@ -100,5 +170,11 @@ public class AiCasPlayer : IPlayer {
     {
         subject.AttackDot(otherDot, subject.Strength - 1);
         RoundHandler.CurrPlayerMove.playerDotHandlers.Add(otherDot);
+    }
+
+    void EndTurn()
+    {
+        RoundHandler.CheckGold();
+        RoundHandler.NextPlayer();
     }
 }

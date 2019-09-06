@@ -28,6 +28,12 @@ public class DotHandler : MonoBehaviour {
         {
             if (!RoundHandler.energyDistributionState)
             {
+                Debug.Log("dotfragments: " + (selectdot.DotFragments.Count) + "  //  " + d.level);
+                for (int i = selectdot.DotFragments.Count - 1; i > d.level - 1; i--)
+                {
+                    Debug.Log("dotfragments: " + selectdot.DotFragments[i]);
+                    selectdot.DotFragments[i].SelectColor(true);
+                }
                 if (selectdot.Owner != RoundHandler.CurrPlayerMove)
                 {
                     CancelBuild(6);
@@ -237,7 +243,7 @@ public class DotHandler : MonoBehaviour {
             //finishes the build event in order to prevent exceptions
             Debug.Log("Ended Build");
             OnDrag = false;
-
+            RoundHandler.CheckGold();
             
 
             //restores layers and lists for selecteddot and selecteddotbefore
@@ -249,6 +255,15 @@ public class DotHandler : MonoBehaviour {
                 }
                 selectedDot.UpdateList();
                 selectedDot.UpdateRecognition();
+            }
+            //restores color of selected fragments
+            foreach (DotFragment fragment in selectedDotBefore.DotFragments)
+            {
+                fragment.SelectColor(true);
+            }
+            foreach (DotFragment fragment in selectedDot.DotFragments)
+            {
+                fragment.SelectColor(true);
             }
             if (selectedDotBefore != null)
             {
@@ -474,19 +489,16 @@ public class DotHandler : MonoBehaviour {
 
     public DotHandler[] GetNearbyDotHandlers(float Multiplier)
     {
-        DotHandler[] dotHandlers = new DotHandler[30];
+        List<DotHandler> dotHandlers = new List<DotHandler>();
         Collider2D[] temp = Physics2D.OverlapCircleAll(transform.position, GameHandler.gm.tilling.Radius * Multiplier);
 
-        int failedTimes = 0;
         for(int i = 0; i < temp.Length; i++)
         {
             DotHandler checkD = temp[i].gameObject.GetComponent<DotHandler>();
-            if (checkD == null)
-                failedTimes++;
-            else
-                dotHandlers[i - failedTimes] = checkD;
+            if (checkD != null)
+                dotHandlers.Add(checkD);
         }
-        return dotHandlers;
+        return dotHandlers.ToArray();
     }
     
     public void AttackDot(DotHandler Destination, int Amount)
@@ -560,34 +572,43 @@ public class DotHandler : MonoBehaviour {
 
     public void UpdateStrength(int increment)
     {
-        //handle visual change
-        int i = increment;
-        while (increment != 0)
+        if (-Strength - 1 < increment)
         {
-            if (increment > 0)
+            //handle visual change
+            int times = 0;
+            int i = increment;
+            while (increment != 0 || times > 100)
             {
-                DotFragment fragment = CreateDotFragment(Strength + 1);
-                DotFragments.Add(fragment);
-                fragment.level = Strength + 1;
-                fragment.MainDot = this;
-                i++;
-                increment--;
-                Strength++;
-            }
-            if (increment < 0)
-            {
-                if (DotFragments.Count > 0)
+                if (increment > 0)
                 {
-                    Destroy(DotFragments[DotFragments.Count - 1].gameObject);
-                    DotFragments.RemoveAt(DotFragments.Count - 1);
-                    increment++;
+                    DotFragment fragment = CreateDotFragment(Strength + 1);
+                    DotFragments.Add(fragment);
+                    fragment.level = Strength + 1;
+                    fragment.MainDot = this;
+                    i++;
+                    increment--;
+                    Strength++;
                 }
-                else
+                if (increment < 0)
                 {
-                    Debug.Log("could not change strength, an error occured");
+                    if (DotFragments.Count > 0)
+                    {
+                        Destroy(DotFragments[DotFragments.Count - 1].gameObject);
+                        DotFragments.RemoveAt(DotFragments.Count - 1);
+                        increment++;
+                    }
+                    else
+                    {
+                        Debug.Log("could not change strength, an error occured: " + increment + "  //  " + DotFragments.Count);
+                    }
+                    Strength--;
                 }
-                Strength--;
+                times++;
             }
+        }
+        else
+        {
+            Debug.Log("could not do that: " + -Strength + "  //  " + increment);
         }
     }
     #endregion UtilityMethods

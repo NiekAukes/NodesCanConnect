@@ -32,6 +32,7 @@ public class GameHandler : MonoBehaviour {
     public Transform ConnectionFolder, AnchorFolder, NodeFolder;
     public Tilling tilling;
     public List<DotHandler> StartPoints = new List<DotHandler>();
+    public List<DotHandler> GoldNodes = new List<DotHandler>();
     public GameMode gamemode;
 
     #endregion Variables
@@ -78,6 +79,12 @@ public class GameHandler : MonoBehaviour {
     #endregion RuntimeHandlers
 
     #region StaticMethods
+
+    public static void EndGame()
+    {
+        Application.Quit();
+    }
+
     public static DotHandler CreateNode(Vector2 Position) ///Creates Anchor on Position Parameter
     {
         GameObject objectTemp = Instantiate(gm.NodePrefab, Position, new Quaternion(0, 0, 0, 0), gm.NodeFolder);
@@ -238,7 +245,33 @@ public class GameHandler : MonoBehaviour {
         Vector2 center = offset;
         Vector2 currCenter = center;
         float deltaX = Mathf.Sin(60 * Mathf.Deg2Rad) * radius, deltaY = radius * 1.5f;
+        for (int j = 0; j < 6; j++)
+        {
+            currCenter = center;
+            for (int i = 0; i < 6; i++)
+            {
+                float angleRad = (60 * i - 30) * Mathf.Deg2Rad;
+                Vector2 p = new Vector2(currCenter.x + radius * Mathf.Cos(angleRad), currCenter.y + radius * Mathf.Sin(angleRad));
+                p.x = Mathf.Round(p.x * 1000) / 1000;
+                p.y = Mathf.Round(p.y * 1000) / 1000;
+                if (!seen.Contains(p))
+                {
+                    seen.Add(p);
+                    DotHandler anchor = CreateNode(p);
+                    anchor.name = "Hex(" + currRange + ")[" + j + "][" + i + "]";
+                    anchor.elevation = range - currRange;
+                    if (anchor.elevation == 1)
+                        gm.StartPoints.Add(anchor);
 
+                    anchor.Gfx.GetComponent<SpriteRenderer>().color = new Color(255, 215, 0);
+                    anchor.MaxStrength = 10;
+                    gm.GoldNodes.Add(anchor);
+
+                    anchors.Add(anchor);
+
+                }
+            }
+        }
         while (currRange != range)
         {
             int hexag;
@@ -274,6 +307,11 @@ public class GameHandler : MonoBehaviour {
                             anchor.elevation = range - currRange;
                             if (anchor.elevation == 1)
                                 gm.StartPoints.Add(anchor);
+                            if (anchor.elevation == range + 1)
+                            {
+                                //anchor.Gfx.GetComponent<SpriteRenderer>().color = new Color(255, 215, 0);
+                                anchor.MaxStrength = 10;
+                            }
                             anchors.Add(anchor);
 
                         }
