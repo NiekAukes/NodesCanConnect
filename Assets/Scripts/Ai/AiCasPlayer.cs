@@ -146,13 +146,25 @@ public class AiCasPlayer : IPlayer {
                 }
             }
         }
+        Dictionary<DotHandler, int> PriorityDots = new Dictionary<DotHandler, int>(); // TODO
         foreach (DotHandler d in RoundHandler.CurrPlayerMove.playerDotHandlers)
         {
-
             if (d != null)
             {
                 d.UpdateList();
-                d.UpdateStrength(1);
+            }
+            List<DotHandler> nearbyEnemyDothandlers = new List<DotHandler>();
+            foreach(DotHandler otherDotHandler in d.GetNearbyDotHandlers(3f))
+            {
+                if (otherDotHandler.Owner != this)
+                {
+                    nearbyEnemyDothandlers.Add(otherDotHandler);
+                }
+            }
+            if (d.Strength < 3 && nearbyEnemyDothandlers.Count > 1)
+            {
+                //add Energy
+                //TODO
             }
         }
         EndTurn();

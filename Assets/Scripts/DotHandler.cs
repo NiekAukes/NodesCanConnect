@@ -424,10 +424,15 @@ public class DotHandler : MonoBehaviour {
         }
     }
 
-    public static void EnergyMove(DotHandler from, DotHandler to, int Amount, int evaporation = 0)
+    public static bool EnergyMove(DotHandler from, DotHandler to, int Amount, int evaporation = 0)
     {
-        from.UpdateStrength(-Amount);
-        to.UpdateStrength(Amount - evaporation);
+        if (!(from.Strength - Amount < 1) && !(to.Strength + Amount - evaporation > 6))
+        {
+            from.UpdateStrength(-Amount);
+            to.UpdateStrength(Amount - evaporation);
+            return true;
+        }
+        return false;
     }
 
     public static Connection CreateConnection(DotHandler Origin, DotHandler Destination) //static form for ConnectionCreation

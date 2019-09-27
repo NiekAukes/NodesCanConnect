@@ -168,16 +168,19 @@ public class Connection : MonoBehaviour {
 
     public Connection DrawConnection() //draws new connection for the current connection
     {
-        length = Vector2.Distance(a: origin.transform.position, b: destination.transform.position);
-        tst = Mathf.Abs(origin.transform.position.y - destination.transform.position.y) / (origin.transform.position.x - destination.transform.position.x);
-        DeltaY = Mathf.Abs(origin.transform.position.y - destination.transform.position.y);
-        DeltaX = Mathf.Abs(origin.transform.position.x - destination.transform.position.x);
-        transform.position = new Vector3((DeltaX / 2) + Mathf.Min(origin.transform.position.x, destination.transform.position.x), (DeltaY / 2) + Mathf.Min(origin.transform.position.y, destination.transform.position.y), 0.5f);
+        if (destination != origin)
+        {
+            length = Vector2.Distance(a: origin.transform.position, b: destination.transform.position);
+            tst = Mathf.Abs(origin.transform.position.y - destination.transform.position.y) / (origin.transform.position.x - destination.transform.position.x);
+            DeltaY = Mathf.Abs(origin.transform.position.y - destination.transform.position.y);
+            DeltaX = Mathf.Abs(origin.transform.position.x - destination.transform.position.x);
+            transform.position = new Vector3((DeltaX / 2) + Mathf.Min(origin.transform.position.x, destination.transform.position.x), (DeltaY / 2) + Mathf.Min(origin.transform.position.y, destination.transform.position.y), 0.5f);
 
-        rotationZ = 90 - Mathf.Atan(tst) * Mathf.Rad2Deg;
-        cube.localScale = new Vector3(0.03f, length / 5.75f, 0.1f);
-        cube.rotation = Quaternion.Euler(0, 0, rotationZ);
-        GetComponentInChildren<SpriteRenderer>().color = origin.Owner.playercolor;
+            rotationZ = 90 - Mathf.Atan(tst) * Mathf.Rad2Deg;
+            cube.localScale = new Vector3(0.03f, length / 5.75f, 0.1f);
+            cube.rotation = Quaternion.Euler(0, 0, rotationZ);
+            GetComponentInChildren<SpriteRenderer>().color = origin.Owner.playercolor;
+        }
         return this;
     }
 
