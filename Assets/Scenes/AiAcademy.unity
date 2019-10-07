@@ -4828,7 +4828,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1836514850}
-        m_MethodName: NextButtonInteraction
+        m_MethodName: CloseDialogs
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5601,7 +5601,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1836514850}
-        m_MethodName: NextButtonInteraction
+        m_MethodName: CloseDialogs
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7518,17 +7518,22 @@ MonoBehaviour:
   PlayerPreset: {fileID: 1738815228}
   AiPreset: {fileID: 1835864027}
   playerstart: {fileID: 0}
+  DialogNum: -1
   UIScale: 2
   dialogs:
   - {fileID: 1124572283}
   - {fileID: 1800032855}
   - {fileID: 1937929045}
   - {fileID: 643697334}
+  - {fileID: 1721633495}
   - {fileID: 87422018}
+  - {fileID: 1331824563}
   - {fileID: 2020094777}
   - {fileID: 2146938861}
   - {fileID: 2046498339}
   - {fileID: 623359105}
+  - {fileID: 440667437}
+  - {fileID: 1930782859}
   DialogPos: {x: 0, y: 0}
 --- !u!114 &1836514851
 MonoBehaviour:

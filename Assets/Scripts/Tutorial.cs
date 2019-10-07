@@ -22,7 +22,7 @@ public class Tutorial : MonoBehaviour
     public GameObject PlayerPreset;
     public GameObject AiPreset;
     public DotHandler playerstart = null;
-    int DialogNum = -1;
+    [SerializeField]int DialogNum = -1;
     public float UIScale = 1.5f;
     public List<Dialog> dialogs = new List<Dialog>();
     public Vector2 DialogPos = new Vector2();
@@ -68,6 +68,16 @@ public class Tutorial : MonoBehaviour
         dialogs[DialogNum].ShowDialog();
         dialogs[DialogNum].transform.position = DialogPos;
     }
+
+    public void CloseDialogs()
+    {
+        if (DialogNum > 0)
+        {
+            DialogPos = dialogs[DialogNum].transform.position;
+            dialogs[DialogNum].HideDialog();
+        }
+    }
+
     public void StartPosition()
     {
         PlayerPreset.transform.position = playerstart.transform.position;

@@ -146,26 +146,72 @@ public class AiCasPlayer : IPlayer {
                 }
             }
         }
-        Dictionary<DotHandler, int> PriorityDots = new Dictionary<DotHandler, int>(); // TODO
-        foreach (DotHandler d in RoundHandler.CurrPlayerMove.playerDotHandlers)
+
+        //Recharge Dots
+        List<DotHandler> PriorityDots = new List<DotHandler>();
+        List<int> AssignedValues = new List<int>();
+        int combinedValues = 0;
+        try
         {
-            if (d != null)
+            foreach (DotHandler d in RoundHandler.CurrPlayerMove.playerDotHandlers)
             {
-                d.UpdateList();
-            }
-            List<DotHandler> nearbyEnemyDothandlers = new List<DotHandler>();
-            foreach(DotHandler otherDotHandler in d.GetNearbyDotHandlers(3f))
-            {
-                if (otherDotHandler.Owner != this)
+                if (d != null)
                 {
-                    nearbyEnemyDothandlers.Add(otherDotHandler);
+                    d.UpdateList();
+                }
+
+                //First gets the nearby enemy dothandlers
+                List<DotHandler> nearbyEnemyDothandlers = new List<DotHandler>();
+                int combinedStrength = 0;
+                foreach (DotHandler otherDotHandler in d.GetNearbyDotHandlers(2f))
+                {
+                    if (otherDotHandler.Owner != this && otherDotHandler.Owner != null)
+                    {
+                        nearbyEnemyDothandlers.Add(otherDotHandler);
+
+                        //with their combined strength
+                        combinedStrength += otherDotHandler.Strength;
+                    }
+                }
+                //then calculates how much energy needs to be assigned
+                Debug.Log("to be added: " + d + "  //  " + (d.Strength < 3) +"  //  "+ (nearbyEnemyDothandlers.Count > 0) + "  //  " + combinedStrength + "  //  " + nearbyEnemyDothandlers.Count);
+                if (nearbyEnemyDothandlers.Count > 0 && combinedStrength / nearbyEnemyDothandlers.Count > 0)
+                {
+                    PriorityDots.Add(d);
+                    AssignedValues.Add(combinedStrength / nearbyEnemyDothandlers.Count);
+                    combinedValues += combinedStrength / nearbyEnemyDothandlers.Count;
+
+                    Debug.Log("added: " + d);
+                    //TODO
                 }
             }
-            if (d.Strength < 3 && nearbyEnemyDothandlers.Count > 1)
+            //if there are more recharges assigned than the amount it can assign or the other way around, 
+            //delete some assigned recharges or add some
+            for (int i = 0; i < 100; i++)
             {
-                //add Energy
-                //TODO
+                if (AssignedValues.Count > 0 && combinedValues > playerDotHandlers.Count) //if too many, delete some 
+                {
+                    AssignedValues[Random.Range(0, AssignedValues.Count - 1)]--;
+                    combinedValues--;
+                }
+                if (AssignedValues.Count > 0 && combinedValues < playerDotHandlers.Count) //if too few, add some 
+                {
+                    AssignedValues[Random.Range(0, AssignedValues.Count - 1)]++;
+                    combinedValues++;
+                }
             }
+
+
+            Debug.Log(AssignedValues.Count);
+            for (int i = 0; i < PriorityDots.Count; i++)
+            {
+                Debug.Log(AssignedValues[i]);
+                PriorityDots[i].UpdateStrength(AssignedValues[i]);
+            }
+        }
+        catch(System.Exception e)
+        {
+            throw new System.Exception(e.StackTrace);
         }
         EndTurn();
         yield return null;
